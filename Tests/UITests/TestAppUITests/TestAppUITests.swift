@@ -1,5 +1,5 @@
 //
-// This source file is part of the TemplatePackage open-source project
+// This source file is part of the SpeziSensorKit open-source project
 //
 // SPDX-FileCopyrightText: 2022 Stanford University and the project authors (see CONTRIBUTORS.md)
 //
@@ -19,7 +19,7 @@ class TestAppUITests: XCTestCase {
     
 
     @MainActor
-    func testTemplatePackage() throws {
+    func testSpeziSensorKit() throws {
         let app = XCUIApplication()
         app.launch()
         

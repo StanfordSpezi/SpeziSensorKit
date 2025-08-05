@@ -1,7 +1,7 @@
 // swift-tools-version:6.0
 
 //
-// This source file is part of the TemplatePackage open source project
+// This source file is part of the SpeziSensorKit open source project
 // 
 // SPDX-FileCopyrightText: 2022 Stanford University and the project authors (see CONTRIBUTORS.md)
 // 
@@ -13,28 +13,29 @@ import PackageDescription
 
 
 let package = Package(
-    name: "TemplatePackage",
+    name: "SpeziSensorKit",
     platforms: [
-        .iOS(.v17),
-        .watchOS(.v10),
-        .visionOS(.v1),
-        .tvOS(.v17),
-        .macOS(.v14)
+        .iOS(.v17)
     ],
     products: [
-        .library(name: "TemplatePackage", targets: ["TemplatePackage"])
+        .library(name: "SpeziSensorKit", targets: ["SpeziSensorKit"])
     ],
     dependencies: [
+        .package(url: "https://github.com/StanfordSpezi/Spezi.git", from: "1.8.0")
     ] + swiftLintPackage(),
     targets: [
         .target(
-            name: "TemplatePackage",
+            name: "SpeziSensorKit",
+            dependencies: [
+                .product(name: "Spezi", package: "Spezi")
+            ],
+            swiftSettings: [.enableUpcomingFeature("ExistentialAny"), .enableUpcomingFeature("InternalImportsByDefault")],
             plugins: [] + swiftLintPlugin()
         ),
         .testTarget(
-            name: "TemplatePackageTests",
+            name: "SpeziSensorKitTests",
             dependencies: [
-                .target(name: "TemplatePackage")
+                .target(name: "SpeziSensorKit")
             ],
             plugins: [] + swiftLintPlugin()
         )
