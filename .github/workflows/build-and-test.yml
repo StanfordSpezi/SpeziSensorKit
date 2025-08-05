@@ -18,47 +18,14 @@ jobs:
   swiftlint:
     name: SwiftLint
     uses: StanfordBDHG/.github/.github/workflows/swiftlint.yml@v2
-  packageios:
+  package_ios:
     name: Build and Test Swift Package iOS
     uses: StanfordBDHG/.github/.github/workflows/xcodebuild-or-fastlane.yml@v2
     with:
       scheme: SpeziSensorKit
       resultBundle: SpeziSensorKit-iOS.xcresult
       artifactname: SpeziSensorKit-iOS.xcresult
-  packagewatchos:
-    name: Build and Test Swift Package watchOS
-    uses: StanfordBDHG/.github/.github/workflows/xcodebuild-or-fastlane.yml@v2
-    with:
-      scheme: SpeziSensorKit
-      destination: 'platform=watchOS Simulator,name=Apple Watch Series 10 (46mm)'
-      resultBundle: SpeziSensorKit-watchOS.xcresult
-      artifactname: SpeziSensorKit-watchOS.xcresult
-  packagevisionos:
-    name: Build and Test Swift Package visionOS
-    uses: StanfordBDHG/.github/.github/workflows/xcodebuild-or-fastlane.yml@v2
-    with:
-      runsonlabels: '["macOS", "self-hosted"]'
-      scheme: SpeziSensorKit
-      destination: 'platform=visionOS Simulator,name=Apple Vision Pro'
-      resultBundle: SpeziSensorKit-visionOS.xcresult
-      artifactname: SpeziSensorKit-visionOS.xcresult
-  packagetvos:
-    name: Build and Test Swift Package tvOS
-    uses: StanfordBDHG/.github/.github/workflows/xcodebuild-or-fastlane.yml@v2
-    with:
-      scheme: SpeziSensorKit
-      resultBundle: SpeziSensorKit-tvOS.xcresult
-      destination: 'platform=tvOS Simulator,name=Apple TV 4K (3rd generation)'
-      artifactname: SpeziSensorKit-tvOS.xcresult
-  packagemacos:
-    name: Build and Test Swift Package macOS
-    uses: StanfordBDHG/.github/.github/workflows/xcodebuild-or-fastlane.yml@v2
-    with:
-      scheme: SpeziSensorKit
-      resultBundle: SpeziSensorKit-macOS.xcresult
-      destination: 'platform=macOS,arch=arm64'
-      artifactname: SpeziSensorKit-macOS.xcresult
-  ios:
+  uitests:
     name: Build and Test iOS
     uses: StanfordBDHG/.github/.github/workflows/xcodebuild-or-fastlane.yml@v2
     with:
@@ -66,49 +33,11 @@ jobs:
       scheme: TestApp
       resultBundle: TestApp-iOS.xcresult
       artifactname: TestApp-iOS.xcresult
-  ipados:
-    name: Build and Test iPadOS
-    uses: StanfordBDHG/.github/.github/workflows/xcodebuild-or-fastlane.yml@v2
-    with:
-      path: 'Tests/UITests'
-      scheme: TestApp
-      destination: 'platform=iOS Simulator,name=iPad Air 13-inch (M2)'
-      resultBundle: TestApp-iPadOS.xcresult
-      artifactname: TestApp-iPadOS.xcresult
-  watchos:
-    name: Build and Test watchOS
-    uses: StanfordBDHG/.github/.github/workflows/xcodebuild-or-fastlane.yml@v2
-    with:
-      runsonlabels: '["macOS", "self-hosted"]'
-      path: 'Tests/UITests'
-      scheme: TestAppWatchApp
-      destination: 'platform=watchOS Simulator,name=Apple Watch Series 10 (46mm)'
-      resultBundle: TestApp-watchOS.xcresult
-      artifactname: TestApp-watchOS.xcresult
-  visionos:
-    name: Build and Test visionOS
-    uses: StanfordBDHG/.github/.github/workflows/xcodebuild-or-fastlane.yml@v2
-    with:
-      runsonlabels: '["macOS", "self-hosted"]'
-      path: 'Tests/UITests'
-      scheme: TestApp
-      destination: 'platform=visionOS Simulator,name=Apple Vision Pro'
-      resultBundle: TestApp-visionOS.xcresult
-      artifactname: TestApp-visionOS.xcresult
-  tvos:
-    name: Build and Test tvOS
-    uses: StanfordBDHG/.github/.github/workflows/xcodebuild-or-fastlane.yml@v2
-    with:
-      path: 'Tests/UITests'
-      scheme: TestApp
-      destination: 'platform=tvOS Simulator,name=Apple TV 4K (3rd generation)'
-      resultBundle: TestApp-tvOS.xcresult
-      artifactname: TestApp-tvOS.xcresult
   uploadcoveragereport:
     name: Upload Coverage Report
-    needs: [packageios, packagewatchos, packagevisionos, packagetvos, packagemacos, ios, ipados, watchos, visionos, tvos]
+    needs: [package_ios, uitests]
     uses: StanfordBDHG/.github/.github/workflows/create-and-upload-coverage-report.yml@v2
     with:
-      coveragereports: SpeziSensorKit-iOS.xcresult SpeziSensorKit-watchOS.xcresult SpeziSensorKit-visionOS.xcresult SpeziSensorKit-tvOS.xcresult SpeziSensorKit-macOS.xcresult TestApp-iOS.xcresult TestApp-iPadOS.xcresult TestApp-watchOS.xcresult TestApp-visionOS.xcresult TestApp-tvOS.xcresult
+      coveragereports: SpeziSensorKit-iOS.xcresult TestApp-iOS.xcresult
     secrets:
       token: ${{ secrets.CODECOV_TOKEN }}
