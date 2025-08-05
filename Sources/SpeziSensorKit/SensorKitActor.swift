@@ -10,16 +10,17 @@ import Dispatch
 import Foundation
 
 
+/// The global actor used to coordinate SensorKit operations.
 @globalActor
-actor SensorKitActor {
+public actor SensorKitActor {
     /// The shared actor instance.
-    static let shared = SensorKitActor()
+    public static let shared = SensorKitActor()
     
     /// The underlying dispatch queue that runs the actor Jobs.
     nonisolated let dispatchQueue: DispatchSerialQueue
     
     /// The underlying unowned serial executor.
-    nonisolated var unownedExecutor: UnownedSerialExecutor {
+    public nonisolated var unownedExecutor: UnownedSerialExecutor {
         dispatchQueue.asUnownedSerialExecutor()
     }
     

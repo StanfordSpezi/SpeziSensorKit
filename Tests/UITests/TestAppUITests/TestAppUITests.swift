@@ -20,7 +20,6 @@ class TestAppUITests: XCTestCase {
     func testSpeziSensorKit() throws {
         let app = XCUIApplication()
         app.launch()
-        
-        XCTAssert(app.staticTexts["Hello Spezi: )"].waitForExistence(timeout: 0.1))
+        XCTAssert(app.staticTexts["Hello Spezi :)"].waitForExistence(timeout: 1))
     }
 }

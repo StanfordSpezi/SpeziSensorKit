@@ -20,12 +20,11 @@ public protocol AnySensor: Hashable, Sendable {
     var dataQuarantineDuration: Duration { get }
 }
 
+
+/// A Sensor that can be used with SensorKit.
 public struct Sensor<Sample: AnyObject & Hashable>: AnySensor {
-    /// The underlying SensorKit `SRSensor`
     public let srSensor: SRSensor
-    /// The recommended display name
     public let displayName: String
-    /// How long the system hold data in quarantine before it can be queried by applications.
     public let dataQuarantineDuration: Duration
     
     @inlinable
@@ -37,6 +36,7 @@ public struct Sensor<Sample: AnyObject & Hashable>: AnySensor {
 }
 
 extension Sensor where Sample == SRWristDetection {
+    /// A sensor that describes the watch’s position on the wrist.
     @inlinable public static var onWrist: Sensor<SRWristDetection> {
         Sensor(
             srSensor: .onWristState,
@@ -47,6 +47,7 @@ extension Sensor where Sample == SRWristDetection {
 }
 
 extension Sensor where Sample == SRAmbientLightSample {
+    /// A sensor that provides ambient light information.
     @inlinable public static var ambientLight: Sensor<SRAmbientLightSample> {
         Sensor(
             srSensor: .ambientLightSensor,
@@ -57,6 +58,7 @@ extension Sensor where Sample == SRAmbientLightSample {
 }
 
 extension Sensor where Sample == CMRecordedPressureData {
+    /// A sensor that provides pressure and temperature metrics.
     @inlinable public static var ambientPressure: Sensor<CMRecordedPressureData> {
         Sensor(
             srSensor: .ambientPressure,
@@ -67,6 +69,7 @@ extension Sensor where Sample == CMRecordedPressureData {
 }
 
 extension Sensor where Sample == CMHighFrequencyHeartRateData {
+    /// A sensor that provides the user’s heart rate data.
     @inlinable public static var heartRate: Sensor<CMHighFrequencyHeartRateData> {
         Sensor(
             srSensor: .heartRate,
@@ -77,6 +80,7 @@ extension Sensor where Sample == CMHighFrequencyHeartRateData {
 }
 
 extension Sensor where Sample == CMPedometerData {
+    /// A sensor that provides information about the user’s steps.
     @inlinable public static var pedometer: Sensor<CMPedometerData> {
         Sensor(
             srSensor: .pedometerData,
@@ -87,6 +91,7 @@ extension Sensor where Sample == CMPedometerData {
 }
 
 extension Sensor where Sample == SRWristTemperatureSession {
+    /// A sensor that provides wrist temperature while the user sleeps.
     @inlinable public static var wristTemperature: Sensor<SRWristTemperatureSession> {
         Sensor(
             srSensor: .wristTemperature,
@@ -98,6 +103,7 @@ extension Sensor where Sample == SRWristTemperatureSession {
 
 @available(iOS 17.4, *)
 extension Sensor where Sample == SRPhotoplethysmogramSample {
+    /// A sensor that streams sample PPG sensor data.
     @inlinable public static var ppg: Sensor<SRPhotoplethysmogramSample> {
         Sensor(
             srSensor: .photoplethysmogram,
@@ -109,6 +115,7 @@ extension Sensor where Sample == SRPhotoplethysmogramSample {
 
 @available(iOS 17.4, *)
 extension Sensor where Sample == SRElectrocardiogramSample {
+    /// A sensor that streams sample ECG sensor data.
     @inlinable public static var ecg: Sensor<SRElectrocardiogramSample> {
         Sensor(
             srSensor: .electrocardiogram,
@@ -119,6 +126,7 @@ extension Sensor where Sample == SRElectrocardiogramSample {
 }
 
 extension Sensor where Sample == SRVisit {
+    /// A sensor that provides information about frequently visited locations.
     @inlinable public static var visits: Sensor<SRVisit> {
         Sensor(
             srSensor: .visits,
@@ -129,6 +137,7 @@ extension Sensor where Sample == SRVisit {
 }
 
 extension Sensor where Sample == SRDeviceUsageReport {
+    /// A sensor that provides information about device usage.
     @inlinable public static var deviceUsage: Sensor<SRDeviceUsageReport> {
         Sensor(
             srSensor: .deviceUsageReport,

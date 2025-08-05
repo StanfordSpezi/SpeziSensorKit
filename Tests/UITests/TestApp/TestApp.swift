@@ -6,9 +6,8 @@
 // SPDX-License-Identifier: MIT
 //
 
-import SwiftUI
 import SpeziSensorKit
-
+import SwiftUI
 
 @main
 struct UITestsApp: App {

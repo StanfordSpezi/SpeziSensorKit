@@ -12,37 +12,8 @@ import OSLog
 public import SensorKit
 
 
-public protocol SensorReaderProtocol<Sample>: AnyObject, Sendable {
-    associatedtype Sample: AnyObject & Hashable
-    
-    var sensor: Sensor<Sample> { get }
-    
-    @SensorKitActor
-    func startRecording() async throws
-    
-    @SensorKitActor
-    func stopRecording() async throws
-    
-    @SensorKitActor
-    func fetchDevices() async throws -> sending [SRDevice]
-    
-    @SensorKitActor
-    func fetch(from device: SRDevice?, timeRange: Range<Date>) async throws -> [SensorKit.FetchResult<Sample>]
-}
-
-
-extension SensorReaderProtocol {
-    @SensorKitActor
-    public func fetch(from device: SRDevice? = nil, mostRecentAvailable fetchDuration: Duration) async throws -> [SensorKit.FetchResult<Sample>] {
-        let endDate = Date.now.addingTimeInterval(-sensor.dataQuarantineDuration.timeInterval)
-        let startDate = endDate.addingTimeInterval(-fetchDuration.timeInterval)
-        return try await fetch(from: device, timeRange: startDate..<endDate)
-    }
-}
-
-
 @Observable
-public final class SensorReader<Sample: AnyObject & Hashable>: NSObject, SensorReaderProtocol, @unchecked Sendable, SRSensorReaderDelegate {
+public final class SensorReader<Sample: AnyObject & Hashable>: SensorReaderProtocol, @unchecked Sendable {
     private enum State {
         case idle
         case fetchingDevices(CheckedContinuation<[SRDevice], any Error>)
@@ -90,7 +61,8 @@ public final class SensorReader<Sample: AnyObject & Hashable>: NSObject, SensorR
     }
     
     @ObservationIgnored public let sensor: Sensor<Sample>
-    @ObservationIgnored private let logger = Logger(subsystem: "edu.stanford.MHC", category: "SensorKit")
+    @ObservationIgnored private var delegateImpl: SensorDelegate?
+    @ObservationIgnored private let logger = Logger(subsystem: "edu.stanford.SpeziSensorKit", category: "SensorKit")
     @ObservationIgnored private let reader: SRSensorReader
     @ObservationIgnored /*@SensorKitActor*/ private var state: State = .idle
     @ObservationIgnored @SensorKitActor private let lock = Lock()
@@ -99,13 +71,8 @@ public final class SensorReader<Sample: AnyObject & Hashable>: NSObject, SensorR
     public nonisolated init(sensor: Sensor<Sample>) {
         self.sensor = sensor
         reader = SRSensorReader(sensor: sensor.srSensor)
-//        id = "123"
-        super.init()
-        reader.delegate = self
-    }
-    
-    deinit {
-        logger.notice("\(self.reader) DEINIT")
+        delegateImpl = SensorDelegate(reader: self)
+        reader.delegate = delegateImpl
     }
     
     @SensorKitActor
@@ -113,11 +80,15 @@ public final class SensorReader<Sample: AnyObject & Hashable>: NSObject, SensorR
         precondition(state.isIdle)
     }
     
+    /// Obtains the lock for operations on this ``SensorReader``.
+    ///
+    /// If the lock is already taken, this function will wait until the lock is released, obtain it, and then return.
     @SensorKitActor
     private func lock() async {
         await lock.lock()
     }
     
+    /// Releases the lock.
     @SensorKitActor
     private func unlock() {
         lock.unlock()
@@ -146,7 +117,7 @@ public final class SensorReader<Sample: AnyObject & Hashable>: NSObject, SensorR
             state = .idle
             unlock()
         }
-        return try await withCheckedThrowingContinuation { continuation in
+        try await withCheckedThrowingContinuation { continuation in
             checkIsIdle()
             state = .startingRecording(continuation)
             reader.startRecording()
@@ -161,7 +132,7 @@ public final class SensorReader<Sample: AnyObject & Hashable>: NSObject, SensorR
             state = .idle
             unlock()
         }
-        return try await withCheckedThrowingContinuation { continuation in
+        try await withCheckedThrowingContinuation { continuation in
             checkIsIdle()
             state = .stoppingRecording(continuation)
             reader.stopRecording()
@@ -169,16 +140,15 @@ public final class SensorReader<Sample: AnyObject & Hashable>: NSObject, SensorR
     }
     
     @SensorKitActor
-    public func fetch(from device: SRDevice? = nil, timeRange: Range<Date>) async throws -> [SensorKit.FetchResult<Sample>] { // TODO we could also model this as an API that returns an AsyncStream... (NOT A GOOD IDEA THOUGH!!!)
-        logger.notice("Will obtain lock to perform fetch")
+    public func fetch(
+        from device: SRDevice? = nil, // swiftlint:disable:this function_default_parameter_at_end
+        timeRange: Range<Date>
+    ) async throws -> [SensorKit.FetchResult<Sample>] {
         await lock()
-        logger.notice(" Did obtain lock to perform fetch")
         checkIsIdle()
         defer {
             state = .idle
-            logger.notice("Will release lock")
             unlock()
-            logger.notice(" Did release lock")
         }
         let fetchRequest = SRFetchRequest()
         if let device {
@@ -296,7 +266,8 @@ extension SensorReader {
         
         private func reportUnexpectedDelegateCallback(_ caller: StaticString = #function) {
             guard self.reader.state.isIdle else {
-                fatalError()
+                let stateDesc = "\(self.reader.state)"
+                preconditionFailure("Received unexpected delegate callback '\(caller)' while in state \(stateDesc)")
             }
             self.reader.logger.error("Unexpectedly received delegate callback '\(caller)' while in idle state.")
         }
