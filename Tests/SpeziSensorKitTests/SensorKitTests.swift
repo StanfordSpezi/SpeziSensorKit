@@ -15,6 +15,7 @@ struct SensorKitTests {
     @Test
     func hmmm() {
         let module = SensorKit()
-        #expect(module.authorizationStatus(for: <#T##SRSensor#>))
+        #expect(module.authorizationStatus(for: .heartRate) == .notDetermined)
+        module.requestAccess(to: [])
     }
 }

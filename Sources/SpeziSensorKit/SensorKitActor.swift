@@ -11,6 +11,8 @@ import Foundation
 
 
 /// The global actor used to coordinate SensorKit operations.
+///
+/// Your app never needs to interact with this directly.
 @globalActor
 public actor SensorKitActor {
     /// The shared actor instance.

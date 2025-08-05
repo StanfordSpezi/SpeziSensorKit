@@ -10,13 +10,12 @@ import Foundation
 public import SensorKit
 
 
+/// A type-erased ``SensorReader``.
 public protocol SensorReaderProtocol<Sample>: AnyObject, Sendable {
     associatedtype Sample: AnyObject, Hashable
     
-    associatedtype Sensor: AnySensor = SpeziSensorKit.Sensor<Sample>
-    
     /// The reader's underlying ``Sensor``
-    var sensor: Sensor { get }
+    var sensor: Sensor<Sample> { get }
     
     /// Tells the OS to start data collection for this reader's sensor
     @SensorKitActor
@@ -37,6 +36,10 @@ public protocol SensorReaderProtocol<Sample>: AnyObject, Sendable {
 
 
 extension SensorReaderProtocol {
+    var typeErasedSensor: any AnySensor {
+        sensor
+    }
+    
     /// Fetches data from SensorKit
     @SensorKitActor
     public func fetch(

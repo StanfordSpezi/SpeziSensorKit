@@ -21,13 +21,15 @@ let package = Package(
         .library(name: "SpeziSensorKit", targets: ["SpeziSensorKit"])
     ],
     dependencies: [
-        .package(url: "https://github.com/StanfordSpezi/Spezi.git", from: "1.8.0")
+        .package(url: "https://github.com/StanfordSpezi/Spezi.git", from: "1.8.0"),
+        .package(url: "https://github.com/StanfordSpezi/SpeziFoundation.git", from: "2.2.0")
     ] + swiftLintPackage(),
     targets: [
         .target(
             name: "SpeziSensorKit",
             dependencies: [
-                .product(name: "Spezi", package: "Spezi")
+                .product(name: "Spezi", package: "Spezi"),
+                .product(name: "SpeziFoundation", package: "SpeziFoundation")
             ],
             swiftSettings: [
                 .enableUpcomingFeature("ExistentialAny"),

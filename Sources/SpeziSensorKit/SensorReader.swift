@@ -166,6 +166,8 @@ public final class SensorReader<Sample: AnyObject & Hashable>: SensorReaderProto
 
 
 extension SensorReader {
+    // We put all of this into a separate, private type
+    // so that the SensorReader class doesn't need to declare a public conformance to SRSensorReaderDelegate.
     private final class SensorDelegate: NSObject, SRSensorReaderDelegate, Sendable {
         unowned let reader: SensorReader
         
