@@ -3,7 +3,7 @@
 //
 // This source file is part of the SpeziSensorKit open source project
 // 
-// SPDX-FileCopyrightText: 2022 Stanford University and the project authors (see CONTRIBUTORS.md)
+// SPDX-FileCopyrightText: 2025 Stanford University and the project authors (see CONTRIBUTORS.md)
 // 
 // SPDX-License-Identifier: MIT
 //
@@ -29,7 +29,10 @@ let package = Package(
             dependencies: [
                 .product(name: "Spezi", package: "Spezi")
             ],
-            swiftSettings: [.enableUpcomingFeature("ExistentialAny"), .enableUpcomingFeature("InternalImportsByDefault")],
+            swiftSettings: [
+                .enableUpcomingFeature("ExistentialAny"),
+                .enableUpcomingFeature("InternalImportsByDefault")
+            ],
             plugins: [] + swiftLintPlugin()
         ),
         .testTarget(

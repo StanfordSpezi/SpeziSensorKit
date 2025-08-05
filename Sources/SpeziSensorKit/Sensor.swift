@@ -11,7 +11,16 @@ public import SensorKit
 public import SpeziFoundation
 
 
-public struct Sensor<Sample: AnyObject & Hashable>: Hashable, Sendable {
+public protocol AnySensor: Hashable, Sendable {
+    /// The underlying SensorKit `SRSensor`
+    var srSensor: SRSensor { get }
+    /// The recommended display name
+    var displayName: String { get }
+    /// How long the system hold data in quarantine before it can be queried by applications.
+    var dataQuarantineDuration: Duration { get }
+}
+
+public struct Sensor<Sample: AnyObject & Hashable>: AnySensor {
     /// The underlying SensorKit `SRSensor`
     public let srSensor: SRSensor
     /// The recommended display name

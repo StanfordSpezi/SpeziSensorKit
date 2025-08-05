@@ -6,8 +6,6 @@
 // SPDX-License-Identifier: MIT
 //
 
-// swiftlint:disable no_extension_access_modifier all
-
 import Foundation
 public import Observation
 import os
@@ -25,16 +23,15 @@ public final class SensorKit: Module, EnvironmentAccessible {
 // MARK: Authorization
 
 nonisolated extension SensorKit {
-//    @SensorKitActor
-    public func authorizationStatus(for sensor: SRSensor) -> SRAuthorizationStatus {
-        let reader = SRSensorReader(sensor: sensor)
+    public func authorizationStatus(for sensor: Sensor<some Any>) -> SRAuthorizationStatus {
+        let reader = SRSensorReader(sensor: sensor.srSensor)
         return reader.authorizationStatus
     }
     
     @MainActor
-    public func requestAccess(to sensors: Set<SRSensor>) async throws {
+    public func requestAccess(to sensors: [any AnySensor]) async throws {
         do {
-            try await SRSensorReader.requestAuthorization(sensors: sensors)
+            try await SRSensorReader.requestAuthorization(sensors: sensors.mapIntoSet(\.srSensor))
         } catch {
             if (error as? SRError)?.code == .promptDeclined,
                (error as NSError).underlyingErrors.contains(where: { ($0 as NSError).code == 8201 }) {
@@ -46,15 +43,6 @@ nonisolated extension SensorKit {
         }
     }
 }
-
-
-// MARK: SensorReader
-
-//extension SensorKit {
-//    enum FetchError: Error {
-//        case invalidTimeRange
-//    }
-//}
 
 
 extension SRAuthorizationStatus {
