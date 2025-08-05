@@ -11,9 +11,11 @@ import SensorKit
 
 
 extension SensorKit {
+    /// A batch of samples returned by SensorKit
     public struct FetchResult<Sample: AnyObject & Hashable>: Hashable, @unchecked Sendable {
-        /// The SensorKit framework's timestamp
+        /// The SensorKit framework's timestamp associated with this batch of samples
         public let sensorKitTimestamp: Date
+        /// The samples.
         public let samples: [Sample]
         
         init(_ fetchResult: SRFetchResult<AnyObject>) {

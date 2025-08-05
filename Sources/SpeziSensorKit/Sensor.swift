@@ -11,6 +11,7 @@ public import SensorKit
 public import SpeziFoundation
 
 
+/// A type-erased ``Sensor``
 public protocol AnySensor: Hashable, Sendable {
     /// The underlying SensorKit `SRSensor`
     var srSensor: SRSensor { get }
