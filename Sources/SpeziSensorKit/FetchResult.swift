@@ -22,9 +22,9 @@ extension SensorKit {
             sensorKitTimestamp = Date(timeIntervalSinceReferenceDate: fetchResult.timestamp.toCFAbsoluteTime())
             samples = switch sensor.sensorKitFetchReturnType {
             case .object:
-                [unsafeBitCast(fetchResult.sample, to: Sample.self)]
+                [unsafeDowncast(fetchResult.sample, to: Sample.self)]
             case .array:
-                Array(_immutableCocoaArray: unsafeBitCast(fetchResult.sample, to: NSArray.self))
+                Array(_immutableCocoaArray: unsafeDowncast(fetchResult.sample, to: NSArray.self))
             }
         }
     }
