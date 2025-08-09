@@ -66,15 +66,22 @@ func xxx() async throws {
 /// ### Supporting Types
 /// - ``AnySensor``
 public struct Sensor<Sample: AnyObject & Hashable>: AnySensor {
+    @usableFromInline
+    enum SensorKitFetchReturnType: Sendable {
+        case object, array
+    }
+    
     public let srSensor: SRSensor
     public let displayName: String
     public let dataQuarantineDuration: Duration
+    @usableFromInline let sensorKitFetchReturnType: SensorKitFetchReturnType
     
     @inlinable
-    init(srSensor: SRSensor, displayName: String, dataQuarantineDuration: Duration) {
+    init(srSensor: SRSensor, displayName: String, dataQuarantineDuration: Duration, sensorKitFetchReturnType: SensorKitFetchReturnType) {
         self.srSensor = srSensor
         self.displayName = displayName
         self.dataQuarantineDuration = dataQuarantineDuration
+        self.sensorKitFetchReturnType = sensorKitFetchReturnType
     }
 }
 
@@ -84,7 +91,8 @@ extension Sensor where Sample == SRWristDetection {
         Sensor(
             srSensor: .onWristState,
             displayName: "On-Wrist State",
-            dataQuarantineDuration: .hours(24)
+            dataQuarantineDuration: .hours(24),
+            sensorKitFetchReturnType: .object
         )
     }
 }
@@ -95,7 +103,8 @@ extension Sensor where Sample == SRAmbientLightSample {
         Sensor(
             srSensor: .ambientLightSensor,
             displayName: "Ambient Light",
-            dataQuarantineDuration: .hours(24)
+            dataQuarantineDuration: .hours(24),
+            sensorKitFetchReturnType: .object
         )
     }
 }
@@ -106,7 +115,8 @@ extension Sensor where Sample == CMRecordedPressureData {
         Sensor(
             srSensor: .ambientPressure,
             displayName: "Ambient Pressure",
-            dataQuarantineDuration: .hours(24)
+            dataQuarantineDuration: .hours(24),
+            sensorKitFetchReturnType: .array
         )
     }
 }
@@ -117,7 +127,8 @@ extension Sensor where Sample == CMHighFrequencyHeartRateData {
         Sensor(
             srSensor: .heartRate,
             displayName: "Heart Rate",
-            dataQuarantineDuration: .hours(24)
+            dataQuarantineDuration: .hours(24),
+            sensorKitFetchReturnType: .object
         )
     }
 }
@@ -128,7 +139,8 @@ extension Sensor where Sample == CMPedometerData {
         Sensor(
             srSensor: .pedometerData,
             displayName: "Pedometer",
-            dataQuarantineDuration: .hours(24)
+            dataQuarantineDuration: .hours(24),
+            sensorKitFetchReturnType: .object
         )
     }
 }
@@ -139,7 +151,8 @@ extension Sensor where Sample == SRWristTemperatureSession {
         Sensor(
             srSensor: .wristTemperature,
             displayName: "Wrist Temperature",
-            dataQuarantineDuration: .hours(24)
+            dataQuarantineDuration: .hours(24),
+            sensorKitFetchReturnType: .object
         )
     }
 }
@@ -151,7 +164,8 @@ extension Sensor where Sample == SRPhotoplethysmogramSample {
         Sensor(
             srSensor: .photoplethysmogram,
             displayName: "PPG",
-            dataQuarantineDuration: .hours(24)
+            dataQuarantineDuration: .hours(24),
+            sensorKitFetchReturnType: .object
         )
     }
 }
@@ -163,7 +177,8 @@ extension Sensor where Sample == SRElectrocardiogramSample {
         Sensor(
             srSensor: .electrocardiogram,
             displayName: "ECG",
-            dataQuarantineDuration: .hours(24)
+            dataQuarantineDuration: .hours(24),
+            sensorKitFetchReturnType: .object
         )
     }
 }
@@ -174,7 +189,8 @@ extension Sensor where Sample == SRVisit {
         Sensor(
             srSensor: .visits,
             displayName: "Visits",
-            dataQuarantineDuration: .hours(24)
+            dataQuarantineDuration: .hours(24),
+            sensorKitFetchReturnType: .object
         )
     }
 }
@@ -185,7 +201,8 @@ extension Sensor where Sample == SRDeviceUsageReport {
         Sensor(
             srSensor: .deviceUsageReport,
             displayName: "Device Usage Report",
-            dataQuarantineDuration: .hours(24)
+            dataQuarantineDuration: .hours(24),
+            sensorKitFetchReturnType: .object
         )
     }
 }

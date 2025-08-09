@@ -32,10 +32,21 @@ public import SensorKit
 /// - ``SensorReaderProtocol``
 @Observable
 public final class SensorReader<Sample: AnyObject & Hashable>: SensorReaderProtocol, @unchecked Sendable {
+    // We use a heap-allocated Array for building up the list of FetchResults;
+    // for some reason this has significantly better performance when used as an associated value in an enum case
+    // than simply using an Array directly.
+    // (Presumably because fewer copies are made...)
+    private final class FetchResultsArray {
+        private(set) var fetchResults: [SensorKit.FetchResult<Sample>] = []
+        func append(_ fetchResult: consuming SensorKit.FetchResult<Sample>) {
+            fetchResults.append(fetchResult)
+        }
+    }
+    
     private enum State {
         case idle
         case fetchingDevices(CheckedContinuation<[SRDevice], any Error>)
-        case fetchingSamples(samples: [SensorKit.FetchResult<Sample>], CheckedContinuation<[SensorKit.FetchResult<Sample>], any Error>)
+        case fetchingSamples(FetchResultsArray, CheckedContinuation<[SensorKit.FetchResult<Sample>], any Error>)
         case startingRecording(CheckedContinuation<Void, any Error>)
         case stoppingRecording(CheckedContinuation<Void, any Error>)
         
@@ -51,9 +62,10 @@ public final class SensorReader<Sample: AnyObject & Hashable>: SensorReaderProto
     @ObservationIgnored private var delegateImpl: SensorDelegate?
     @ObservationIgnored private let logger = Logger(subsystem: "edu.stanford.SpeziSensorKit", category: "SensorKit")
     @ObservationIgnored private let reader: SRSensorReader
-    @ObservationIgnored @SensorKitActor private var state: State = .idle
+    // NOTE: reads of `state` may happen on any thread, but we only write from the @SensorKitActor
+    @ObservationIgnored private nonisolated(unsafe) var state: State = .idle
     @ObservationIgnored @SensorKitActor private let lock = Lock()
-    @MainActor private(set) public var authorizationStatus: SRAuthorizationStatus = .notDetermined
+    @MainActor public private(set) var authorizationStatus: SRAuthorizationStatus = .notDetermined
     
     public nonisolated init(_ sensor: Sensor<Sample>) {
         self.sensor = sensor
@@ -145,7 +157,7 @@ public final class SensorReader<Sample: AnyObject & Hashable>: SensorReaderProto
         fetchRequest.to = .fromCFAbsoluteTime(_cf: timeRange.upperBound.timeIntervalSinceReferenceDate)
         return try await withCheckedThrowingContinuation { continuation in
             checkIsIdle()
-            state = .fetchingSamples(samples: [], continuation)
+            state = .fetchingSamples(FetchResultsArray(), continuation)
             reader.fetch(fetchRequest)
         }
     }
@@ -157,6 +169,8 @@ extension SensorReader {
     // so that the SensorReader class doesn't need to declare a public conformance to SRSensorReaderDelegate.
     private final class SensorDelegate: NSObject, SRSensorReaderDelegate, Sendable {
         unowned let reader: SensorReader
+        
+        nonisolated(unsafe) private var numFetchResults: Int = 0
         
         init(reader: SensorReader) {
             self.reader = reader
@@ -170,109 +184,89 @@ extension SensorReader {
         
         func sensorReader(_ reader: SRSensorReader, didFetch devices: [SRDevice]) {
             nonisolated(unsafe) let devices = devices
-            Task { @SensorKitActor in
-                switch self.reader.state {
-                case .fetchingDevices(let continuation):
-                    continuation.resume(returning: devices)
-                default:
-                    reportUnexpectedDelegateCallback()
-                }
+            switch self.reader.state {
+            case .fetchingDevices(let continuation):
+                continuation.resume(returning: devices)
+            default:
+                reportUnexpectedDelegateCallback()
             }
         }
         
         func sensorReader(_ reader: SRSensorReader, fetchDevicesDidFailWithError error: any Error) {
-            Task { @SensorKitActor in
-                switch self.reader.state {
-                case .fetchingDevices(let continuation):
-                    continuation.resume(throwing: error)
-                default:
-                    reportUnexpectedDelegateCallback()
-                }
+            switch self.reader.state {
+            case .fetchingDevices(let continuation):
+                continuation.resume(throwing: error)
+            default:
+                reportUnexpectedDelegateCallback()
             }
         }
         
         func sensorReader(_ reader: SRSensorReader, fetching fetchRequest: SRFetchRequest, didFetchResult result: SRFetchResult<AnyObject>) -> Bool {
             nonisolated(unsafe) let result = result
-            Task { @SensorKitActor in
-                switch self.reader.state {
-                case let .fetchingSamples(samples, continuation):
-                    var samples = consume samples
-                    samples.append(.init(result))
-                    self.reader.state = .fetchingSamples(samples: samples, continuation)
-                default:
-                    reportUnexpectedDelegateCallback()
-                }
+            switch self.reader.state {
+            case .fetchingSamples(let fetchResults, _):
+                fetchResults.append(.init(result, for: self.reader.sensor))
+            default:
+                reportUnexpectedDelegateCallback()
             }
             return true
         }
         
         func sensorReader(_ reader: SRSensorReader, fetching fetchRequest: SRFetchRequest, failedWithError error: any Error) {
-            Task { @SensorKitActor in
-                switch self.reader.state {
-                case .fetchingSamples(samples: _, let continuation):
-                    continuation.resume(throwing: error)
-                default:
-                    reportUnexpectedDelegateCallback()
-                }
+            switch self.reader.state {
+            case .fetchingSamples(_, let continuation):
+                continuation.resume(throwing: error)
+            default:
+                reportUnexpectedDelegateCallback()
             }
         }
         
         func sensorReader(_ reader: SRSensorReader, didCompleteFetch fetchRequest: SRFetchRequest) {
-            Task { @SensorKitActor in
-                switch self.reader.state {
-                case let .fetchingSamples(samples, continuation):
-                    continuation.resume(returning: samples)
-                default:
-                    reportUnexpectedDelegateCallback()
-                }
+            switch self.reader.state {
+            case let .fetchingSamples(fetchResults, continuation):
+                continuation.resume(returning: fetchResults.fetchResults)
+            default:
+                reportUnexpectedDelegateCallback()
             }
         }
         
         func sensorReaderWillStartRecording(_ reader: SRSensorReader) {
-            Task { @SensorKitActor in
-                switch self.reader.state {
-                case .startingRecording(let continuation):
-                    continuation.resume()
-                default:
-                    reportUnexpectedDelegateCallback()
-                }
+            switch self.reader.state {
+            case .startingRecording(let continuation):
+                continuation.resume()
+            default:
+                reportUnexpectedDelegateCallback()
             }
         }
         
         func sensorReader(_ reader: SRSensorReader, startRecordingFailedWithError error: any Error) {
-            Task { @SensorKitActor in
-                switch self.reader.state {
-                case .startingRecording(let continuation):
-                    continuation.resume(throwing: error)
-                default:
-                    reportUnexpectedDelegateCallback()
-                }
+            switch self.reader.state {
+            case .startingRecording(let continuation):
+                continuation.resume(throwing: error)
+            default:
+                reportUnexpectedDelegateCallback()
             }
         }
         
         func sensorReaderDidStopRecording(_ reader: SRSensorReader) {
-            Task { @SensorKitActor in
-                switch self.reader.state {
-                case .stoppingRecording(let continuation):
-                    continuation.resume()
-                default:
-                    reportUnexpectedDelegateCallback()
-                }
+            switch self.reader.state {
+            case .stoppingRecording(let continuation):
+                continuation.resume()
+            default:
+                reportUnexpectedDelegateCallback()
             }
         }
         
         func sensorReader(_ reader: SRSensorReader, stopRecordingFailedWithError error: any Error) {
-            Task { @SensorKitActor in
-                switch self.reader.state {
-                case .stoppingRecording(let continuation):
-                    continuation.resume(throwing: error)
-                default:
-                    reportUnexpectedDelegateCallback()
-                }
+            switch self.reader.state {
+            case .stoppingRecording(let continuation):
+                continuation.resume(throwing: error)
+            default:
+                reportUnexpectedDelegateCallback()
             }
         }
         
-        @SensorKitActor
+        
         private func reportUnexpectedDelegateCallback(_ caller: StaticString = #function) {
             guard self.reader.state.isIdle else {
                 let stateDesc = "\(self.reader.state)"

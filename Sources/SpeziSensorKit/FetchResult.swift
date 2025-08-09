@@ -18,14 +18,13 @@ extension SensorKit {
         /// The samples.
         public let samples: [Sample]
         
-        init(_ fetchResult: SRFetchResult<AnyObject>) {
+        init(_ fetchResult: SRFetchResult<AnyObject>, for sensor: Sensor<Sample>) {
             sensorKitTimestamp = Date(timeIntervalSinceReferenceDate: fetchResult.timestamp.toCFAbsoluteTime())
-            samples = if let samples = fetchResult.sample as? [Sample] {
-                samples
-            } else if let sample = fetchResult.sample as? Sample {
-                [sample]
-            } else {
-                preconditionFailure("Unable to process fetch result \(fetchResult)")
+            samples = switch sensor.sensorKitFetchReturnType {
+            case .object:
+                [unsafeBitCast(fetchResult.sample, to: Sample.self)]
+            case .array:
+                Array(_immutableCocoaArray: unsafeBitCast(fetchResult.sample, to: NSArray.self))
             }
         }
     }
