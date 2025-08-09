@@ -7,7 +7,7 @@
 //
 
 public import CoreMotion
-public import SensorKit
+@preconcurrency public import SensorKit
 public import SpeziFoundation
 
 
@@ -22,7 +22,49 @@ public protocol AnySensor: Hashable, Sendable {
 }
 
 
+func xxx() async throws {
+    let reader = SensorReader(.ambientPressure)
+    let devices = try await reader.fetchDevices()
+    for device in devices {
+        let results = try await reader.fetch(from: device, mostRecentAvailable: .days(7))
+        for (date, sample) in SensorKit.FetchResultsIterator(results) {
+            let _: Date = date
+            let _: CMRecordedPressureData = sample
+        }
+    }
+}
+
+
 /// A Sensor that can be used with SensorKit.
+///
+/// The `Sensor` type models a sensor that can be used with SensorKit.
+/// It is a thin wrapper around SensorKit's `SRSensor` type, adding sensor-specific information such as a user-displayable name for the sensor and its iOS-enforced data quarantine period.
+///
+/// Additionally, `Sensor`'s generic parameter is used to associate each sensor with its specific sample type used by SensorKit.
+///
+/// You use the ``SensorReader`` to fetch a sensor's data from SensorKit.
+///
+/// ## Topics
+///
+/// ### Instance Properties
+/// - ``srSensor``
+/// - ``displayName``
+/// - ``dataQuarantineDuration``
+///
+/// ### Supported Sensors
+/// - ``onWrist``
+/// - ``ambientLight``
+/// - ``ambientPressure``
+/// - ``heartRate``
+/// - ``pedometer``
+/// - ``wristTemperature``
+/// - ``ppg``
+/// - ``ecg``
+/// - ``visits``
+/// - ``deviceUsage``
+///
+/// ### Supporting Types
+/// - ``AnySensor``
 public struct Sensor<Sample: AnyObject & Hashable>: AnySensor {
     public let srSensor: SRSensor
     public let displayName: String

@@ -6,41 +6,18 @@
 // SPDX-License-Identifier: MIT
 //
 
-import Foundation
 public import Observation
-import os
-public import SensorKit
+@_exported public import SensorKit
 public import Spezi
 
 
-/// Interact with SensorKit in your Spezi Application
+/// Interact with SensorKit in your Spezi application
 ///
-/// ## Topics
-///
-/// ### Working with Sensors
-/// - ``reader(for:)``
-///
-/// ### Authorization
 /// - ``authorizationStatus(for:)``
 /// - ``requestAccess(to:)``
 @Observable
 public final class SensorKit: Module, EnvironmentAccessible, Sendable {
-    nonisolated private let logger = Logger(subsystem: "edu.stanford.MHC", category: "SensorKit")
-    @MainActor private var sensorReaders: [any SensorReaderProtocol] = []
-    
     public nonisolated init() {}
-    
-    /// Obtains the reader for the specified ``Sensor``.
-    @MainActor
-    public func reader<Sample>(for sensor: Sensor<Sample>) -> SensorReader<Sample> {
-        if let reader = sensorReaders.first(where: { $0.typeErasedSensor.srSensor == sensor.srSensor }) {
-            return reader as! SensorReader<Sample> // swiftlint:disable:this force_cast
-        } else {
-            let reader = SensorReader(sensor: sensor)
-            sensorReaders.append(reader)
-            return reader
-        }
-    }
 }
 
 
@@ -64,22 +41,6 @@ extension SensorKit {
             } else {
                 throw error
             }
-        }
-    }
-}
-
-
-extension SRAuthorizationStatus {
-    var displayName: String {
-        switch self {
-        case .notDetermined:
-            "not determined"
-        case .authorized:
-            "authorized"
-        case .denied:
-            "denied"
-        @unknown default:
-            "unknown<\(rawValue)>"
         }
     }
 }

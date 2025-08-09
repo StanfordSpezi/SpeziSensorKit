@@ -13,6 +13,23 @@ public import SensorKit
 
 
 /// Read samples from a SensorKit ``Sensor``.
+///
+/// ## Topics
+///
+/// ### Initializers
+/// - ``init(_:)``
+///
+/// ### Instance Properties
+/// - ``sensor``
+/// - ``authorizationStatus``
+///
+/// ### Operations
+/// - ``fetchDevices()``
+/// - ``fetch(from:timeRange:)``
+/// - ``fetch(from:mostRecentAvailable:)``
+///
+/// ### Supporting Types
+/// - ``SensorReaderProtocol``
 @Observable
 public final class SensorReader<Sample: AnyObject & Hashable>: SensorReaderProtocol, @unchecked Sendable {
     private enum State {
@@ -36,9 +53,9 @@ public final class SensorReader<Sample: AnyObject & Hashable>: SensorReaderProto
     @ObservationIgnored private let reader: SRSensorReader
     @ObservationIgnored @SensorKitActor private var state: State = .idle
     @ObservationIgnored @SensorKitActor private let lock = Lock()
-    @MainActor private(set) var authorizationStatus: SRAuthorizationStatus = .notDetermined
+    @MainActor private(set) public var authorizationStatus: SRAuthorizationStatus = .notDetermined
     
-    public nonisolated init(sensor: Sensor<Sample>) {
+    public nonisolated init(_ sensor: Sensor<Sample>) {
         self.sensor = sensor
         reader = SRSensorReader(sensor: sensor.srSensor)
         delegateImpl = SensorDelegate(reader: self)
