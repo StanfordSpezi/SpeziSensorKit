@@ -7,7 +7,7 @@
 //
 
 public import Observation
-@_exported public import SensorKit
+@_exported @preconcurrency public import SensorKit
 public import Spezi
 
 
