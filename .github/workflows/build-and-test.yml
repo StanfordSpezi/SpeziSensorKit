@@ -1,7 +1,7 @@
 #
 # This source file is part of the Stanford Spezi open source project
 #
-# SPDX-FileCopyrightText: 2022 Stanford University and the project authors (see CONTRIBUTORS.md)
+# SPDX-FileCopyrightText: 2025 Stanford University and the project authors (see CONTRIBUTORS.md)
 #
 # SPDX-License-Identifier: MIT
 #
@@ -20,29 +20,27 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  packageios:
-    name: Build and Test Swift Package iOS
+  package_tests:
+    name: Build and Test Swift Package ${{ matrix.platform.name }} (${{ matrix.config }})
     uses: StanfordBDHG/.github/.github/workflows/xcodebuild-or-fastlane.yml@v2
+    strategy:
+      matrix:
+        config: [Debug, Release]
+        platform:
+          - name: iOS
+            destination: 'platform=iOS Simulator,name=iPhone 16 Pro'
     with:
       runsonlabels: '["macOS", "self-hosted"]'
       scheme: SpeziSensorKit
-      resultBundle: SpeziSensorKit-iOS.xcresult
-      artifactname: SpeziSensorKit-iOS.xcresult
-  ios:
-    name: Build and Test iOS
-    uses: StanfordBDHG/.github/.github/workflows/xcodebuild-or-fastlane.yml@v2
-    if: ${{ false }}
-    with:
-      runsonlabels: '["macOS", "self-hosted"]'
-      path: 'Tests/UITests'
-      scheme: TestApp
-      resultBundle: TestApp-iOS.xcresult
-      artifactname: TestApp-iOS.xcresult
+      destination: ${{ matrix.platform.destination }}
+      buildConfig: ${{ matrix.config }}
+      resultBundle: ${{ format('SpeziSensorKit-{0}-{1}.xcresult', matrix.platform.name, matrix.config) }}
+      artifactname: ${{ format('SpeziSensorKit-{0}-{1}.xcresult', matrix.platform.name, matrix.config) }}
   uploadcoveragereport:
     name: Upload Coverage Report
-    needs: [packageios, ios]
+    needs: [package_tests]
     uses: StanfordBDHG/.github/.github/workflows/create-and-upload-coverage-report.yml@v2
     with:
-      coveragereports: SpeziSensorKit-iOS.xcresult TestApp-iOS.xcresult
+      coveragereports: SpeziSensorKit-*.xcresult
     secrets:
       token: ${{ secrets.CODECOV_TOKEN }}
