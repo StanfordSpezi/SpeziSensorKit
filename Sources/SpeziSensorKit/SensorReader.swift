@@ -35,7 +35,9 @@ public final class SensorReader<Sample: AnyObject & Hashable>: SensorReaderProto
     // We use a heap-allocated Array for building up the list of FetchResults;
     // for some reason this has significantly better performance when used as an associated value in an enum case
     // than simply using an Array directly.
-    // (Presumably because fewer copies are made...)
+    // (The issue was that, in the case of using the Array as the enum's associated value,
+    // every time we'd get informed about a new fetch result by SensorKit, add it to the array and then re-assign the enum,
+    // it'd end up making a copy of the array rather than just mutating it in place (even when using the `consume` operator)...)
     private final class FetchResultsArray {
         private(set) var fetchResults: [SensorKit.FetchResult<Sample>] = []
         func append(_ fetchResult: consuming SensorKit.FetchResult<Sample>) {
