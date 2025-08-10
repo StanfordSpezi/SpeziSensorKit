@@ -22,19 +22,6 @@ public protocol AnySensor: Hashable, Sendable {
 }
 
 
-func xxx() async throws {
-    let reader = SensorReader(.ambientPressure)
-    let devices = try await reader.fetchDevices()
-    for device in devices {
-        let results = try await reader.fetch(from: device, mostRecentAvailable: .days(7))
-        for (date, sample) in SensorKit.FetchResultsIterator(results) {
-            let _: Date = date
-            let _: CMRecordedPressureData = sample
-        }
-    }
-}
-
-
 /// A Sensor that can be used with SensorKit.
 ///
 /// The `Sensor` type models a sensor that can be used with SensorKit.
@@ -165,7 +152,7 @@ extension Sensor where Sample == SRPhotoplethysmogramSample {
             srSensor: .photoplethysmogram,
             displayName: "PPG",
             dataQuarantineDuration: .hours(24),
-            sensorKitFetchReturnType: .object
+            sensorKitFetchReturnType: .array
         )
     }
 }
@@ -178,7 +165,7 @@ extension Sensor where Sample == SRElectrocardiogramSample {
             srSensor: .electrocardiogram,
             displayName: "ECG",
             dataQuarantineDuration: .hours(24),
-            sensorKitFetchReturnType: .object
+            sensorKitFetchReturnType: .array
         )
     }
 }
