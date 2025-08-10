@@ -24,6 +24,26 @@ You need to add the Spezi SensorKit Swift package to
  [Spezi setup article](https://swiftpackageindex.com/stanfordspezi/spezi/documentation/spezi/initial-setup) and set up the core Spezi infrastructure. 
 
 
+### SensorKit Entitlements
+
+In order to use SensorKit in your app, you need to list each sensor you want to access in your app's entitlements file.
+
+Create an entry for the `com.apple.developer.sensorkit.reader.allow` key, of type array, and add each sensor's key to that array.
+
+| Sensor                      | Entitlement            |
+| :-------------------------- | :--------------------- |
+| ``Sensor/ambientLight``     | `ambient-light-sensor` |
+| ``Sensor/ambientPressure``  | `ambient-pressure`     |
+| ``Sensor/deviceUsage``      | `device-usage`         |
+| ``Sensor/ecg``              | `ECG`                  |
+| ``Sensor/heartRate``        | `heart-rate`           |
+| ``Sensor/onWrist``          | `on-wrist`             |
+| ``Sensor/pedometer``        | `pedometer`            |
+| ``Sensor/ppg``              | `PPG`                  |
+| ``Sensor/visits``           | `visits`               |
+| ``Sensor/wristTemperature`` | `wrist-temperature`    |
+
+
 ### Example
 You use the ``SensorReader`` type to fetch data from SensorKit.
 First, fetch a list of all devices from which SensorKit has data for the sensor you want to query.

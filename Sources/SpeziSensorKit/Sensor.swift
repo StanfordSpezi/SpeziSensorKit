@@ -39,16 +39,16 @@ public protocol AnySensor: Hashable, Sendable {
 /// - ``dataQuarantineDuration``
 ///
 /// ### Supported Sensors
-/// - ``onWrist``
 /// - ``ambientLight``
 /// - ``ambientPressure``
-/// - ``heartRate``
-/// - ``pedometer``
-/// - ``wristTemperature``
-/// - ``ppg``
-/// - ``ecg``
-/// - ``visits``
 /// - ``deviceUsage``
+/// - ``ecg``
+/// - ``heartRate``
+/// - ``onWrist``
+/// - ``pedometer``
+/// - ``ppg``
+/// - ``visits``
+/// - ``wristTemperature``
 ///
 /// ### Supporting Types
 /// - ``AnySensor``
