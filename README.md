@@ -23,16 +23,6 @@ The Spezi SensorKit module enables apps to integrate with Apple's [SensorKit](ht
 
 
 ### Example
-You use the ``SensorReader`` type to fetch data from SensorKit.
-First, fetch a list of all devices from which SensorKit has data for the sensor you want to query.
-Then, fetch each device's samples using the ``SensorReader/fetch(from:timeRange:)`` or ``SensorReader/fetch(from:mostRecentAvailable:)`` functions.
-
-> Note: SensorKit enforces a quarantine period for each sensor's data; apps can only access data once a certain, sensor-specific time period has passed.
-  SpeziSensorKit is aware of each sensor's ``Sensor/dataQuarantineDuration`` and will automatically adjust your fetch requests to not overlap with the quarantine time periods.
-
-#### Fetch Results
-SensorKit returns samples as an Array of `SRFetchResult` objects, each of which contains one or more samples.
-For most sensors, the `SRFetchResult` contains only a single sample
 
 ```swift
 import SpeziSensorKit
