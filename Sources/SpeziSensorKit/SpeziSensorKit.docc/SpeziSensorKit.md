@@ -55,10 +55,9 @@ for device in devices {
 The amount of samples collected varies significantly across the different sensors.
 While some of them collect only a small number of samples, some others (e.g., ``Sensor/ambientPressure``) will collect large amounts of data; fetching too many samples at once, or using inefficient Array-based operations will incur performance penalties and might cause your app to crash if it runs out of memory.
 
-SpeziSensorKit offers some utilities to deal with this:
-- the ``SensorKit/FetchResult`` lazily evaluates its ``SensorKit/FetchResult/samples`` property, deferring the decoding of the underlying samples until they are actually accessed for the first time;
-- the ``SensorKit/FetchResultsIterator`` can be used to efficiently iterate over a collection of ``SensorKit/FetchResult``s, without unnecessary intermediate allocations;
-- make sure in your app to use lazy sequence/collection operations when possible when working with SensorKit data (see e.g. the example above).
+Make sure in your app to use lazy sequence/collection operations when possible when working with SensorKit data (see e.g. the example above).
+
+Additionally, SpeziSensorKit offers the ``SensorKit/FetchResultsIterator`` to efficiently process individual samples alongside their SensorKit timestamps, without unnecessary intermediate allocations. 
 
 
 ### Threading Considerations
