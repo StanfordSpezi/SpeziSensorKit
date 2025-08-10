@@ -13,10 +13,10 @@ SPDX-License-Identifier: MIT
 Interact with SensorKit in your Spezi application
 
 ## Overview
-The Spezi HealthKit module enables apps to integrate with Apple's HealthKit system, fetch data, set up long-lived background data collection, and visualize Health-related data.
+The Spezi SensorKit module enables apps to integrate with Apple's [SensorKit](https://developer.apple.com/documentation/sensorkit) system, such as requesting authorization, setting up background data collection, and fetching collected samples.
 
 ### Setup
-You need to add the Spezi HealthKit Swift package to
+You need to add the Spezi SensorKit Swift package to
  [your app in Xcode](https://developer.apple.com/documentation/xcode/adding-package-dependencies-to-your-app) or
  [Swift package](https://developer.apple.com/documentation/xcode/creating-a-standalone-swift-package-with-xcode#Add-a-dependency-on-another-Swift-package).
 
@@ -25,7 +25,6 @@ You need to add the Spezi HealthKit Swift package to
 
 
 ### Example
-
 You use the ``SensorReader`` type to fetch data from SensorKit.
 First, fetch a list of all devices from which SensorKit has data for the sensor you want to query.
 Then, fetch each device's samples using the ``SensorReader/fetch(from:timeRange:)`` or ``SensorReader/fetch(from:mostRecentAvailable:)`` functions.
@@ -51,7 +50,6 @@ for device in devices {
 ```
 
 ### Performance Considerations
-
 The amount of samples collected varies significantly across the different sensors.
 While some of them collect only a small number of samples, some others (e.g., ``Sensor/ambientPressure``) will collect large amounts of data; fetching too many samples at once, or using inefficient Array-based operations will incur performance penalties and might cause your app to crash if it runs out of memory.
 
@@ -61,7 +59,6 @@ Additionally, SpeziSensorKit offers the ``SensorKit/FetchResultsIterator`` to ef
 
 
 ### Threading Considerations
-
 Avoid accessing the same ``Sensor`` from multiple threads at the same time, even if using different ``SensorReader`` instances.
 
 

@@ -19,93 +19,30 @@ SPDX-License-Identifier: MIT
 Interact with SensorKit in your Spezi app.
 
 ## Overview
-
-The Spezi HealthKit module enables apps to integrate with Apple's HealthKit system, fetch data, set up long-lived background data collection, and visualize Health-related data.
-
-### Setup
-
-You need to add the Spezi HealthKit Swift package to
-[your app in Xcode](https://developer.apple.com/documentation/xcode/adding-package-dependencies-to-your-app) or
-[Swift package](https://developer.apple.com/documentation/xcode/creating-a-standalone-swift-package-with-xcode#Add-a-dependency-on-another-Swift-package).
-
-> [!IMPORTANT]
-> If your application is not yet configured to use Spezi, follow the [Spezi setup article](https://swiftpackageindex.com/stanfordspezi/spezi/documentation/spezi/initial-setup) to set up the core Spezi infrastructure.
+The Spezi SensorKit module enables apps to integrate with Apple's [SensorKit](https://developer.apple.com/documentation/sensorkit) system, such as requesting authorization, setting up background data collection, and fetching collected samples. 
 
 
-### Health Data Collection
+### Example
+You use the ``SensorReader`` type to fetch data from SensorKit.
+First, fetch a list of all devices from which SensorKit has data for the sensor you want to query.
+Then, fetch each device's samples using the ``SensorReader/fetch(from:timeRange:)`` or ``SensorReader/fetch(from:mostRecentAvailable:)`` functions.
 
-Before you configure the [`HealthKit`](https://swiftpackageindex.com/stanfordspezi/spezihealthkit/documentation/spezihealthkit/healthkit-swift.class)  module, make sure your `Standard` in your Spezi Application conforms to the [`HealthKitConstraint`](https://swiftpackageindex.com/stanfordspezi/spezihealthkit/documentation/spezihealthkit/healthkitconstraint) protocol to receive HealthKit data.
-The [`HealthKitConstraint/handleNewSamples(_:ofType:)`](https://swiftpackageindex.com/stanfordspezi/spezihealthkit/documentation/spezihealthkit/healthkitconstraint/handleNewSamples(_:ofType:)) function is called once for every batch of newly collected HealthKit samples, and the [`HealthKitConstraint/handleDeletedObjects(_:ofType:)`](https://swiftpackageindex.com/stanfordspezi/spezihealthkit/documentation/spezihealthkit/healthkitconstraint/handleDeletedObjects(_:ofType:)) function is called once for every batch of deleted HealthKit objects.
+> Note: SensorKit enforces a quarantine period for each sensor's data; apps can only access data once a certain, sensor-specific time period has passed.
+  SpeziSensorKit is aware of each sensor's ``Sensor/dataQuarantineDuration`` and will automatically adjust your fetch requests to not overlap with the quarantine time periods.
+
+#### Fetch Results
+SensorKit returns samples as an Array of `SRFetchResult` objects, each of which contains one or more samples.
+For most sensors, the `SRFetchResult` contains only a single sample
+
 ```swift
-actor ExampleStandard: Standard, HealthKitConstraint {
-    // Add the newly collected HealthKit samples to your application.
-    func handleNewSamples<Sample>(
-        _ addedSamples: some Collection<Sample>,
-        ofType sampleType: SampleType<Sample>
-    ) async {
-        // ...
-    }
+import SpeziSensorKit
 
-    // Remove the deleted HealthKit objects from your application.
-    func handleDeletedObjects<Sample>(
-        _ deletedObjects: some Collection<HKDeletedObject>,
-        ofType sampleType: SampleType<Sample>
-    ) async {
-        // ...
-    }
-}
-```
-
-
-Then, you can configure the [`HealthKit`](https://swiftpackageindex.com/stanfordspezi/spezihealthkit/documentation/spezihealthkit/healthkit-swift.class) module in the configuration section of your `SpeziAppDelegate`.
-You can, e.g., use [`CollectSample`](https://swiftpackageindex.com/stanfordspezi/spezihealthkit/documentation/spezihealthkit/collectsample) to collect a wide variety of HealthKit data types:
-```swift
-class ExampleAppDelegate: SpeziAppDelegate {
-    override var configuration: Configuration {
-        Configuration(standard: ExampleStandard()) {
-            HealthKit {
-                CollectSample(.activeEnergyBurned)
-                CollectSample(.stepCount, start: .manual)
-                CollectSample(.pushCount, start: .manual)
-                CollectSample(.heartRate, continueInBackground: true)
-                CollectSample(.electrocardiogram, start: .manual)
-                RequestReadAccess(quantity: [.bloodOxygen])
-            }
-        }
-    }
-}
-```
-
-> [!TIP]
-> See [`SampleType`](https://swiftpackageindex.com/stanfordspezi/spezihealthkit/documentation/spezihealthkit/sampletype) for a complete list of supported sample types.
-
-
-### Querying Health Data in SwiftUI
-
-You can use [`SpeziSensorKitUI`](https://swiftpackageindex.com/stanfordspezi/spezihealthkit/documentation/spezihealthkitui)'s [`HealthKitQuery`](https://swiftpackageindex.com/stanfordspezi/spezihealthkit/documentation/spezihealthkitui/healthkitquery) and [`HealthKitStatisticsQuery`](https://swiftpackageindex.com/stanfordspezi/spezihealthkit/documentation/spezihealthkitui/healthkitstatisticsquery) property wrappers to access the Health database in a View:
-```swift
-struct ExampleView: View {
-    @HealthKitQuery(.heartRate, timeRange: .today)
-    private var heartRateSamples
-
-    var body: some View {
-        ForEach(heartRateSamples) { sample in
-            // ...
-        }
-    }
-}
-```
-
-Additionally, you can use [`SpeziSensorKitUI`](https://swiftpackageindex.com/stanfordspezi/spezihealthkit/documentation/spezihealthkitui)'s [`HealthChart`](https://swiftpackageindex.com/stanfordspezi/spezihealthkit/documentation/spezihealthkitui/healthchart) to visualise query results:
-```swift
-struct ExampleView: View {
-    @HealthKitQuery(.heartRate, timeRange: .today)
-    private var heartRateSamples
-
-    var body: some View {
-        HealthChart {
-            HealthChartEntry($heartRateSamples, drawingConfig: .init(mode: .line, color: .red))
-        }
+let reader = SensorReader(.heartRate)
+let devices = try await reader.fetchDevices()
+for device in devices {
+    let results = try await reader.fetch(from: device, mostRecentAvailable: .days(7))
+    for sample in results.lazy.flatMap(\.samples) {
+        print(sample.date, sample.heartRate, sample.confidence)
     }
 }
 ```
@@ -115,7 +52,7 @@ For more information, please refer to the [API documentation](https://swiftpacka
 
 ## The Spezi Template Application
 
-The [Spezi Template Application](https://github.com/StanfordSpezi/SpeziTemplateApplication) provides a great starting point and example using the [`SpeziSensorKit`](https://swiftpackageindex.com/stanfordspezi/spezihealthkit/documentation/spezihealthkit) module.
+The [Spezi Template Application](https://github.com/StanfordSpezi/SpeziTemplateApplication) provides a great starting point and example using the [`SpeziSensorKit`](https://swiftpackageindex.com/stanfordspezi/spezisensorkit/documentation/spezisensorkit) module.
 
 
 ## Contributing
