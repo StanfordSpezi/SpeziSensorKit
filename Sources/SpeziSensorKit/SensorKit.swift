@@ -7,12 +7,18 @@
 //
 
 public import Observation
-@_exported @preconcurrency public import SensorKit
+@_documentation(visibility: internal) @_exported @preconcurrency public import SensorKit
 public import Spezi
 
 
 /// Interact with SensorKit in your Spezi application
 ///
+/// ## Topics
+///
+/// ### Initializers
+/// - ``init()``
+///
+/// ### Authorization Handling
 /// - ``authorizationStatus(for:)``
 /// - ``requestAccess(to:)``
 @Observable
