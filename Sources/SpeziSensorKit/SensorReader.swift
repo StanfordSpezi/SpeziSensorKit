@@ -133,15 +133,10 @@ public final class SensorReader<Sample: AnyObject & Hashable>: SensorReaderProto
     }
     
     @SensorKitActor
-    public func fetch(
-        from device: SRDevice? = nil, // swiftlint:disable:this function_default_parameter_at_end
-        timeRange: Range<Date>
-    ) async throws -> [SensorKit.FetchResult<Sample>] {
+    public func fetch(from device: SRDevice, timeRange: Range<Date>) async throws -> [SensorKit.FetchResult<Sample>] {
         try await lockedSensorKitOperation {
             let fetchRequest = SRFetchRequest()
-            if let device {
-                fetchRequest.device = device
-            }
+            fetchRequest.device = device
             fetchRequest.from = .fromCFAbsoluteTime(_cf: timeRange.lowerBound.timeIntervalSinceReferenceDate)
             fetchRequest.to = .fromCFAbsoluteTime(_cf: timeRange.upperBound.timeIntervalSinceReferenceDate)
             return try await withCheckedThrowingContinuation { continuation in

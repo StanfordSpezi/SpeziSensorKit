@@ -22,14 +22,16 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/StanfordSpezi/Spezi.git", from: "1.8.0"),
-        .package(url: "https://github.com/StanfordSpezi/SpeziFoundation.git", from: "2.2.0")
+        .package(url: "https://github.com/StanfordSpezi/SpeziFoundation.git", from: "2.2.0"),
+        .package(url: "https://github.com/StanfordSpezi/SpeziStorage.git", from: "2.1.1")
     ] + swiftLintPackage(),
     targets: [
         .target(
             name: "SpeziSensorKit",
             dependencies: [
                 .product(name: "Spezi", package: "Spezi"),
-                .product(name: "SpeziFoundation", package: "SpeziFoundation")
+                .product(name: "SpeziFoundation", package: "SpeziFoundation"),
+                .product(name: "SpeziLocalStorage", package: "SpeziStorage")
             ],
             swiftSettings: [
                 .enableUpcomingFeature("ExistentialAny"),

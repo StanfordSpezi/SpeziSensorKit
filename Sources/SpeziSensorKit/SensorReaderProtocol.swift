@@ -7,7 +7,7 @@
 //
 
 import Foundation
-public import SensorKit
+@preconcurrency public import SensorKit
 
 
 /// A type-erased ``SensorReader``.
@@ -31,7 +31,7 @@ public protocol SensorReaderProtocol<Sample>: AnyObject, Sendable {
     
     /// Fetches data from SensorKit
     @SensorKitActor
-    func fetch(from device: SRDevice?, timeRange: Range<Date>) async throws -> [SensorKit.FetchResult<Sample>]
+    func fetch(from device: SRDevice, timeRange: Range<Date>) async throws -> [SensorKit.FetchResult<Sample>]
 }
 
 
@@ -42,12 +42,16 @@ extension SensorReaderProtocol {
     
     /// Fetches data from SensorKit
     @SensorKitActor
-    public func fetch(
-        from device: SRDevice? = nil, // swiftlint:disable:this function_default_parameter_at_end
-        mostRecentAvailable fetchDuration: Duration
-    ) async throws -> [SensorKit.FetchResult<Sample>] {
-        let endDate = Date.now.addingTimeInterval(-sensor.dataQuarantineDuration.timeInterval)
+    public func fetch(from device: SRDevice, mostRecentAvailable fetchDuration: Duration) async throws -> [SensorKit.FetchResult<Sample>] {
+        let endDate = sensor.currentQuarantineBegin
         let startDate = endDate.addingTimeInterval(-fetchDuration.timeInterval)
         return try await fetch(from: device, timeRange: startDate..<endDate)
+    }
+    
+    /// Performs a batched fetch, using a managed query anchor.
+    @available(iOS 18, *)
+    @SensorKitActor
+    func fetchBatched(anchor: ManagedQueryAnchor) async throws -> some AsyncSequence<[SensorKit.FetchResult<Sample>], any Error> {
+        try await BatchedAsyncDataFetcher(reader: self, anchor: anchor)
     }
 }
