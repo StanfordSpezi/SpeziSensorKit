@@ -13,7 +13,7 @@
 ///
 /// Each batch will be fetched from SensorKit on demand, i.e. when ``next(isolation:)`` is called.
 ///
-/// - Important: Due to the lazy nature of this type, the sequence should only be iterated once.
+/// - Important: Due to the lazy nature of this type, and the fact that it uses a query anchor internally to keep track of already-fetched time ranhes,  the sequence should only be iterated once.
 @available(iOS 18, *)
 struct BatchedAsyncDataFetcher<Sample, SensorReader: SensorReaderProtocol<Sample>>: AsyncSequence, AsyncIteratorProtocol {
     typealias Element = [SensorKit.FetchResult<Sample>]
@@ -44,7 +44,7 @@ struct BatchedAsyncDataFetcher<Sample, SensorReader: SensorReaderProtocol<Sample
         self.devices = try await reader.fetchDevices()
     }
     
-    consuming func makeAsyncIterator() -> BatchedAsyncDataFetcher<Sample, SensorReader> {
+    consuming func makeAsyncIterator() -> Self {
         self
     }
     
