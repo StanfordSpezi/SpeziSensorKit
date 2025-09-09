@@ -179,39 +179,3 @@ extension SensorReader {
         }
     }
 }
-
-
-// MARK: Utils
-
-extension SensorReader {
-    private final class Lock {
-        private var isLocked = false
-        private var waiters: [CheckedContinuation<Void, Never>] = []
-        
-        init() {}
-        
-        func lock() async {
-            if !isLocked {
-                precondition(waiters.isEmpty, "invalid state: lock is open but there are waiters.")
-                isLocked = true
-            } else {
-                // the lock is locked.
-                // we need to wait until it is our turn to obtain the lock.
-                await withCheckedContinuation { continuation in
-                    waiters.append(continuation)
-                }
-            }
-        }
-        
-        func unlock() {
-            precondition(isLocked, "invalid state: cannot unlock lock that isn't locked.")
-            if waiters.isEmpty {
-                // no one wants to take the lock over from us; we can simply open it
-                isLocked = false
-            } else {
-                // if there are waiters, we keep the lock closed and (semantially) hand it over to the first continuation.
-                waiters.removeFirst().resume()
-            }
-        }
-    }
-}
