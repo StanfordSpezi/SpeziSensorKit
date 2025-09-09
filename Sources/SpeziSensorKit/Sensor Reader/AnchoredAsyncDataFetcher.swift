@@ -91,7 +91,7 @@ struct AnchoredAsyncDataFetcher<Sample, SensorReader: SensorReaderProtocol<Sampl
             try advanceState()
             return try await next(isolation: isolation)
         case let .process(timeRange, devices):
-            guard let _device = devices.first else {
+            guard let _device = devices.first else { // swiftlint:disable:this identifier_name
                 try advanceState()
                 return try await next(isolation: isolation)
             }
