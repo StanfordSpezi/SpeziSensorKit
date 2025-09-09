@@ -165,20 +165,9 @@ extension SensorReader {
                 return
             }
             nonisolated(unsafe) let results = results
-            let samples = SensorKit.FetchResultsIterator(results)
-                .lazy
-//                .compactMap { timestamp, sample -> (timestamp: Date, sample: Sample.SafeRepresentationProcessingInput)? in
-//                    // TODO investigate using an unsafeBitCast instead of the as?, to improve performance!
-//                    // (we already reqiure that the types be equal...)
-//                    if let sample = sample as? Sample.SafeRepresentationProcessingInput {
-//                        (timestamp, sample)
-//                    } else {
-//                        nil
-//                    }
-//                }
-                .map { timestamp, sample -> (timestamp: Date, sample: Sample.SafeRepresentationProcessingInput) in
-                    (timestamp, unsafeBitCast(sample, to: Sample.SafeRepresentationProcessingInput.self))
-                }
+            let samples = SensorKit.FetchResultsIterator(results).lazy.map {
+                (timestamp: $0, sample: unsafeDowncast($1, to: Sample.SafeRepresentationProcessingInput.self))
+            }
             do {
                 let processedResults: [Sample.SafeRepresentation] = try Sample.processIntoSafeRepresentation(samples)
                 continuation.resume(returning: processedResults)
