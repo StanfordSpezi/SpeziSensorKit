@@ -7,7 +7,7 @@
 //
 
 import Foundation
-@preconcurrency public import SensorKit
+public import SensorKit
 
 
 /// A type-erased ``SensorReader``.

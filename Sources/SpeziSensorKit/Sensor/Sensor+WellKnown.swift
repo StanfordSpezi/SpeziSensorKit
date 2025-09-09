@@ -7,7 +7,7 @@
 //
 
 public import CoreMotion
-@preconcurrency public import SensorKit
+public import SensorKit
 public import SpeziFoundation
 
 

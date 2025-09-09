@@ -6,7 +6,7 @@
 // SPDX-License-Identifier: MIT
 //
 
-@preconcurrency import SensorKit
+import SensorKit
 
 
 /// An `AsyncSequence` and `AsyncIterator` that can be used to fetch and process data from SensorKit, split into distinct batches.
@@ -91,10 +91,11 @@ struct AnchoredAsyncDataFetcher<Sample, SensorReader: SensorReaderProtocol<Sampl
             try advanceState()
             return try await next(isolation: isolation)
         case let .process(timeRange, devices):
-            guard let device = devices.first else {
+            guard let _device = devices.first else {
                 try advanceState()
                 return try await next(isolation: isolation)
             }
+            nonisolated(unsafe) let device = _device
             let results = try await reader.fetch(from: device, timeRange: timeRange)
             try advanceState()
             return results

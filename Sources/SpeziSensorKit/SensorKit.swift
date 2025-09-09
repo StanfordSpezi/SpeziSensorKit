@@ -7,7 +7,7 @@
 //
 
 public import Observation
-@_documentation(visibility: internal) @_exported @preconcurrency public import SensorKit
+@_documentation(visibility: internal) @_exported public import SensorKit
 public import Spezi
 import SpeziFoundation
 import SpeziLocalStorage
