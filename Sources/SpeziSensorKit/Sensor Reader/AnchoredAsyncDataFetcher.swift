@@ -15,8 +15,8 @@
 ///
 /// - Important: Due to the lazy nature of this type, and the fact that it uses a query anchor internally to keep track of already-fetched time ranges, the sequence should only be iterated once.
 @available(iOS 18, *)
-struct BatchedAsyncDataFetcher<Sample, SensorReader: SensorReaderProtocol<Sample>>: AsyncSequence, AsyncIteratorProtocol {
-    typealias Element = [SensorKit.FetchResult<Sample>]
+struct AnchoredAsyncDataFetcher<Sample, SensorReader: SensorReaderProtocol<Sample>>: AsyncSequence, AsyncIteratorProtocol {
+    typealias Element = [Sample.SafeRepresentation]
     typealias Failure = any Error
     typealias AsyncIterator = Self
     
@@ -83,17 +83,17 @@ struct BatchedAsyncDataFetcher<Sample, SensorReader: SensorReaderProtocol<Sample
         }
     }
     
-    mutating func next(isolation actor: isolated (any Actor)?) async throws(Failure) -> Element? {
+    mutating func next(isolation: isolated (any Actor)?) async throws(Failure) -> Element? {
         switch state {
         case .done:
             return nil
         case .initial:
             try advanceState()
-            return try await next(isolation: actor)
+            return try await next(isolation: isolation)
         case let .process(timeRange, devices):
             guard let device = devices.first else {
                 try advanceState()
-                return try await next(isolation: actor)
+                return try await next(isolation: isolation)
             }
             let results = try await reader.fetch(from: device, timeRange: timeRange)
             try advanceState()

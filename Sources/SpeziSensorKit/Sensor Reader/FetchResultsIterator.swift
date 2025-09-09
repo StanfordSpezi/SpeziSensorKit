@@ -20,6 +20,10 @@ extension SensorKit {
             state = .init(fetchResults[...])
         }
         
+        public init(_ fetchResult: FetchResult<Sample>) where FetchResults == CollectionOfOne<FetchResult<Sample>> {
+            self.init(CollectionOfOne(fetchResult))
+        }
+        
         public mutating func next() -> Element? {
             switch state {
             case .exhausted:

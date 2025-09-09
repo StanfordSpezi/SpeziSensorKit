@@ -6,52 +6,8 @@
 // SPDX-License-Identifier: MIT
 //
 
-// swiftlint:disable file_types_order
-
-@preconcurrency public import SensorKit
-public import SpeziFoundation
-
-
-/// A type-erased ``Sensor``
-///
-/// - Important: The ``AnySensor`` protocol is public, but your application should not declare any new conformances to it; ``Sensor`` is the only type allowed to conform to ``AnySensor``.
-public protocol AnySensor<Sample>: Hashable, Identifiable, Sendable {
-    associatedtype Sample: AnyObject, Hashable
-    
-    /// The underlying SensorKit `SRSensor`.
-    var srSensor: SRSensor { get }
-    /// The recommended display name.
-    var displayName: String { get }
-    /// How long the system hold data in quarantine before it can be queried by applications.
-    var dataQuarantineDuration: Duration { get }
-    /// The sensor's unique identifier.
-    var id: String { get }
-}
-
-extension AnySensor {
-    @inlinable public var id: String { // swiftlint:disable:this missing_docs
-        srSensor.rawValue
-    }
-    
-    var currentQuarantineBegin: Date {
-        .now.addingTimeInterval(-dataQuarantineDuration.timeInterval)
-    }
-    
-    var suggestedBatchSize: Duration {
-        switch self {
-        case Sensor.onWrist:
-            .days(1)
-        default:
-            .hours(2)
-        }
-    }
-}
-
-/// Compare two sensors, based on their identifiers
-@inlinable
-public func ~= (lhs: Sensor<some Any>, rhs: any AnySensor) -> Bool { // swiftlint:disable:this static_operator
-    lhs.id == rhs.id
-}
+public import SensorKit
+import SpeziFoundation
 
 
 /// A Sensor that can be used with SensorKit.
@@ -85,7 +41,8 @@ public func ~= (lhs: Sensor<some Any>, rhs: any AnySensor) -> Bool { // swiftlin
 ///
 /// ### Supporting Types
 /// - ``AnySensor``
-public struct Sensor<Sample: AnyObject & Hashable>: AnySensor {
+public struct Sensor<Sample: SensorKitSampleProtocol>: AnySensor {
+    public typealias Sample = Sample
     @usableFromInline
     enum SensorKitFetchReturnType: Sendable {
         case object, array
