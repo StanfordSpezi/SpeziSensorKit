@@ -62,14 +62,6 @@ extension SensorKitSampleProtocol where SafeRepresentation == DefaultSensorKitSa
 }
 
 
-/// The amount of samples expected for a Sensor.
-public enum ExpectedSamplesVolume: Hashable, Sendable {
-    case negligible
-    case high
-    case veryHigh
-}
-
-
 /// A type-erased ``Sensor``
 ///
 /// - Important: The ``AnySensor`` protocol is public, but your application should not declare any new conformances to it; ``Sensor`` is the only type allowed to conform to ``AnySensor``.
