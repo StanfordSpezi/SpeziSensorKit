@@ -28,7 +28,7 @@ jobs:
         config: [Debug, Release]
         platform:
           - name: iOS
-            destination: 'platform=iOS Simulator,name=iPhone 16 Pro'
+            destination: 'platform=iOS Simulator,name=iPhone 17 Pro'
     with:
       runsonlabels: '["macOS", "self-hosted"]'
       scheme: SpeziSensorKit
