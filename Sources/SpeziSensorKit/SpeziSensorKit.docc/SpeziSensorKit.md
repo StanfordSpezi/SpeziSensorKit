@@ -114,3 +114,8 @@ When performing multiple queries on a single ``Sensor`` at the same time, ensure
 ### Working with Sensors 
 - ``Sensor``
 - ``AnySensor``
+
+### Sensor Data
+- ``SensorKitSampleProtocol``
+- ``SensorKitECGSession``
+- ``SensorKitOnWristEventSample``

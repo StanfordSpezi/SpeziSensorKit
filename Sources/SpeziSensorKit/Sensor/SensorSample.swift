@@ -24,6 +24,19 @@ public protocol SensorKitSampleSafeRepresentation: Hashable, Sendable {
 /// - Important: For any type that declares conformance to  ``SensorKitSampleProtocol``, the ``SafeRepresentationProcessingInput`` type **must** be equal to the type itself.
 ///     Failure to do so is a programmer error and will result in the program crashing at runtime.
 ///     This associatedtype is required to work around type system limitations.
+///
+/// ## Topics
+///
+/// ### Associated Types
+/// - ``SafeRepresentation``
+/// - ``SafeRepresentationProcessingInput``
+///
+/// ### Static Methods
+/// - ``processIntoSafeRepresentation(_:)``
+///
+/// ### Other Types
+/// - ``SensorKitSampleSafeRepresentation``
+/// - ``DefaultSensorKitSampleSafeRepresentation``
 public protocol SensorKitSampleProtocol: AnyObject, Hashable {
     /// A "safe" `Sendable` representation of the type.
     ///
