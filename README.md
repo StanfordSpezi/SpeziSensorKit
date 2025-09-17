@@ -27,12 +27,12 @@ The Spezi SensorKit module enables apps to integrate with Apple's [SensorKit](ht
 ```swift
 import SpeziSensorKit
 
-let reader = SensorReader(.heartRate)
-let devices = try await reader.fetchDevices()
+let sensor = Sensor.heartRate
+let devices = try await sensor.fetchDevices()
 for device in devices {
-    let results = try await reader.fetch(from: device, mostRecentAvailable: .days(7))
-    for sample in results.lazy.flatMap(\.samples) {
-        print(sample.date, sample.heartRate, sample.confidence)
+    let results = try await sensor.fetch(from: device, mostRecentAvailable: .days(2))
+    for sample in results {
+        print(sample.timestamp, sample.value, sample.confidence)
     }
 }
 ```
