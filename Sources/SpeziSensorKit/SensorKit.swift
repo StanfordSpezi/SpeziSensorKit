@@ -44,6 +44,7 @@ public final class SensorKit: Module, EnvironmentAccessible, @unchecked Sendable
 // MARK: Authorization
 
 extension SensorKit {
+    /// The resulting state of a SensorKit sensor access request.
     public struct AuthorizationResult {
         /// The sensors to which the user has granted access.
         public let authorized: [any AnySensor]
@@ -118,19 +119,6 @@ extension SensorKit {
         /// Some other, unknown error has happened.
         case other(any Error)
         
-        init(_ error: any Error, sensor: any AnySensor) {
-            if sensor.authorizationStatus == .denied {
-                // in some cases (eg: startRecording()), SensorKit will actually set a proper
-                // errorCode 1 (no authorization) when attempting to operate on a denied sensor,
-                // but in some other cases (eg: fetchDevices()) it does not.
-                // so to make things a little easier, we simply assume that any errors raised on sensors
-                // for which the user has denied access are happening because the user denied access.
-                self = .deniedAuthorization(sensor)
-            } else {
-                self = .other(error)
-            }
-        }
-        
         var errorDescription: String? {
             switch self {
             case .deniedAuthorization(let sensor):
@@ -164,6 +152,19 @@ extension SensorKit {
                 nil
             case .other(let error):
                 (error as? any LocalizedError)?.recoverySuggestion
+            }
+        }
+        
+        init(_ error: any Error, sensor: any AnySensor) {
+            if sensor.authorizationStatus == .denied {
+                // in some cases (eg: startRecording()), SensorKit will actually set a proper
+                // errorCode 1 (no authorization) when attempting to operate on a denied sensor,
+                // but in some other cases (eg: fetchDevices()) it does not.
+                // so to make things a little easier, we simply assume that any errors raised on sensors
+                // for which the user has denied access are happening because the user denied access.
+                self = .deniedAuthorization(sensor)
+            } else {
+                self = .other(error)
             }
         }
     }
