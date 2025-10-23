@@ -16,7 +16,7 @@ import SensorKit
 /// - Important: Due to the lazy nature of this type, and the fact that it uses a query anchor internally to keep track of already-fetched time ranges, the sequence should only be iterated once.
 @available(iOS 18, *)
 struct AnchoredAsyncDataFetcher<Sample: SensorKitSampleProtocol>: AsyncSequence, AsyncIteratorProtocol {
-    typealias Element = [Sample.SafeRepresentation]
+    typealias Element = (SensorKit.DeviceInfo, [Sample.SafeRepresentation])
     typealias Failure = any Error
     typealias AsyncIterator = Self
     
@@ -95,7 +95,35 @@ struct AnchoredAsyncDataFetcher<Sample: SensorKitSampleProtocol>: AsyncSequence,
             nonisolated(unsafe) let device = _device
             let results = try await sensor.fetch(from: device, timeRange: timeRange)
             try advanceState()
-            return results
+            return (SensorKit.DeviceInfo(device), results)
+        }
+    }
+}
+
+
+extension SensorKit {
+    public final class DeviceInfo: CustomStringConvertible, Sendable {
+        /// The user-defined name of the device.
+        public let model: String
+        /// The framework-defined name of the device.
+        public let name: String
+        /// The device’s operating system.
+        public let systemName: String
+        /// The device’s operating system version.
+        public let systemVersion: String
+        /// A string that identifies the device used to save a sample.
+        public let productType: String
+        
+        public var description: String {
+            "model=\(model); name=\(name); systemName=\(systemName); systemVersion=\(systemVersion); productType=\(productType)"
+        }
+        
+        public init(_ device: SRDevice) {
+            model = device.model
+            name = device.name
+            systemName = device.systemName
+            systemVersion = device.systemVersion
+            productType = device.productType
         }
     }
 }

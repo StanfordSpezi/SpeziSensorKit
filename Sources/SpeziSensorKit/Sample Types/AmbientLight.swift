@@ -52,3 +52,37 @@ extension SRAmbientLightSample.Chromaticity: @retroactive Equatable, @retroactiv
         hasher.combine(y)
     }
 }
+
+
+extension SRAmbientLightSample.Chromaticity: @retroactive CustomStringConvertible {
+    public var description: String {
+        "\(Self.self)(x: \(x), y: \(y))"
+    }
+}
+
+extension SRAmbientLightSample.SensorPlacement: @retroactive CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case .unknown:
+            "unknown"
+        case .frontTop:
+            "frontTop"
+        case .frontBottom:
+            "frontBottom"
+        case .frontRight:
+            "frontRight"
+        case .frontLeft:
+            "frontLeft"
+        case .frontTopRight:
+            "frontTopRight"
+        case .frontTopLeft:
+            "frontTopLeft"
+        case .frontBottomRight:
+            "frontBottomRight"
+        case .frontBottomLeft:
+            "frontBottomLeft"
+        @unknown default:
+            "unknown<\(rawValue)>"
+        }
+    }
+}
