@@ -92,7 +92,7 @@ extension SensorKit {
     @available(iOS 18, *)
     public func fetchAnchored<Sample>(
         _ sensor: Sensor<Sample>
-    ) async throws -> some AsyncSequence<(SensorKit.DeviceInfo, [Sample.SafeRepresentation]), any Error> {
+    ) async throws -> some AsyncSequence<(SensorKit.BatchInfo, [Sample.SafeRepresentation]), any Error> {
         let anchor = ManagedQueryAnchor(
             storageKey: queryAnchorKeys.key(for: sensor),
             in: localStorage
