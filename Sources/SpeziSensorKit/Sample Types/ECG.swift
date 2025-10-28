@@ -39,11 +39,11 @@ public struct SensorKitECGSession: SensorKitSampleSafeRepresentation {
     /// Start date of the overall ECG.
     public let startDate: Date
     
-    public var timestamp: Date {
-        startDate
+    @inlinable public var timeRange: Range<Date> {
+        startDate..<startDate.addingTimeInterval(duration)
     }
     
-    /// The total duration of the ECG.
+    /// The total duration of the ECG, in seconds.
     public let duration: TimeInterval
     
     /// Frequency in hertz at which the ECG data was recorded.

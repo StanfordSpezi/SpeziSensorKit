@@ -12,6 +12,7 @@ public import SensorKit
 
 extension SRAmbientLightSample: SensorKitSampleProtocol {
     public struct SafeRepresentation: SensorKitSampleSafeRepresentation {
+        /// The point in time when the system recorded the measurement
         public let timestamp: Date
         /// The sample’s luminous flux.
         public let lux: Measurement<UnitIlluminance>
@@ -21,6 +22,10 @@ extension SRAmbientLightSample: SensorKitSampleProtocol {
         ///
         /// - Note: Chromaticity is only valid on supporting devices. If not supported, the values will be zero.
         public let chromacity: SRAmbientLightSample.Chromaticity
+        
+        @inlinable public var timeRange: Range<Date> {
+            timestamp..<timestamp
+        }
         
         @inlinable
         init(timestamp: Date, sample: SRAmbientLightSample) {
