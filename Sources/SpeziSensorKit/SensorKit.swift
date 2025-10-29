@@ -103,8 +103,16 @@ extension SensorKit {
     /// Resets the query anchor for the specified sensor.
     ///
     /// This will cause subsequent calls to ``fetchAnchored(_:)`` to potentially re-fetch already-processed samples.
-    public func resetQueryAnchor(for sensor: Sensor<some Any>) throws {
+    public func resetQueryAnchor(for sensor: any AnySensor) throws {
         try localStorage.delete(queryAnchorKeys.key(for: sensor))
+    }
+    
+    /// Returns the internal value of the sensor's query anchor.
+    ///
+    /// - Important: This function is intended exclusively for debugging purposes; query anchors' internal representations are an implementation detail.
+    @_spi(Internal)
+    public func queryAnchorValue(for sensor: any AnySensor) -> Date? {
+        (try? localStorage.load(queryAnchorKeys.key(for: sensor)))?.timestamp
     }
 }
 

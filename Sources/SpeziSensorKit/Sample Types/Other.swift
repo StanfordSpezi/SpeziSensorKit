@@ -38,6 +38,12 @@ public struct DefaultSensorKitSampleSafeRepresentation<Sample: Hashable & Sendab
     }
 }
 
+extension DefaultSensorKitSampleSafeRepresentation: Identifiable where Sample: Identifiable {
+    public var id: Sample.ID {
+        sample.id
+    }
+}
+
 
 // MARK: SampleType Extensions
 

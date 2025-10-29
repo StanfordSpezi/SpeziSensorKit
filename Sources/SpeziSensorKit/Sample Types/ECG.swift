@@ -88,13 +88,11 @@ extension SRElectrocardiogramSample: SensorKitSampleProtocol {
             return []
         }
         // NOTE: it seems that an `SRElectrocardiogramSession` object does not, as one might intuitively expect,
-        // correlate to a single session for which the ECG sensor was active.
+        // correspond to a single session for which the ECG sensor was active.
         // Instead, there will be multiple `SRElectrocardiogramSession` objects for a single logical session
         // (they will all have the same `identifier`), each representing a different state of the session.
         let sessionsByIdentifier = Dictionary(grouping: samplesBySession.keys, by: \.identifier)
         return sessionsByIdentifier.compactMap { _, sessions -> SensorKitECGSession? in
-            assert(sessions.count == 3)
-            assert(sessions.mapIntoSet(\.state) == [.begin, .active, .end])
             guard let beginSession = sessions.first(where: { $0.state == .begin }),
                   let activeSession = sessions.first(where: { $0.state == .active }) else {
                 return nil
@@ -105,9 +103,9 @@ extension SRElectrocardiogramSample: SensorKitSampleProtocol {
             guard let samples = samplesBySession[activeSession]?.sorted(using: KeyPathComparator(\.date)), !samples.isEmpty else {
                 return nil
             }
-            precondition(samples.mapIntoSet(\.lead).count == 1) // all samples should have same frequency?
-            precondition(samples.mapIntoSet(\.frequency).count == 1) // all samples should have same frequency?
-            precondition(samples.mapIntoSet(\.date).count == samples.count)
+            assert(samples.mapIntoSet(\.lead).count == 1) // all samples should have same frequency?
+            assert(samples.mapIntoSet(\.frequency).count == 1) // all samples should have same frequency?
+            assert(samples.mapIntoSet(\.date).count == samples.count)
             // swiftlint:disable:next force_unwrapping
             let startDate = samplesBySession[beginSession]?.min(of: \.date) ?? samples.first!.date // we just sorted samples by date.
             return SensorKitECGSession(
