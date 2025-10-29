@@ -37,7 +37,7 @@ public final class SensorKit: Module, EnvironmentAccessible, @unchecked Sendable
     }
     
     /// Creates a new instance of the `SensorKit` module.
-    public nonisolated init() {}
+    nonisolated public init() {}
 }
 
 
@@ -58,7 +58,7 @@ extension SensorKit {
     }
     
     /// Checks the  current authorization status of the specified sensor.
-    public nonisolated func authorizationStatus(for sensor: Sensor<some Any>) -> SRAuthorizationStatus {
+    nonisolated public func authorizationStatus(for sensor: Sensor<some Any>) -> SRAuthorizationStatus {
         SRSensorReader(sensor: sensor.srSensor).authorizationStatus
     }
     
@@ -70,7 +70,7 @@ extension SensorKit {
     ///
     /// - parameter sensors: The sensors for which we want to request access.
     /// - returns: A summary which of the `sensors` passed to the function are now authorized and which are denied.
-    public nonisolated func requestAccess(to sensors: [any AnySensor]) async throws -> AuthorizationResult {
+    nonisolated public func requestAccess(to sensors: [any AnySensor]) async throws -> AuthorizationResult {
         let sensorsToActuallyRequest = sensors.compactMapIntoSet {
             $0.authorizationStatus == .notDetermined ? $0.srSensor : nil
         }
