@@ -30,10 +30,28 @@ import SwiftUI
 /// - ``resetQueryAnchor(for:)``
 @Observable
 public final class SensorKit: Module, EnvironmentAccessible, @unchecked Sendable {
+    /// Identifies a query anchor.
+    public struct QueryAnchorKey: Hashable {
+        let sensor: any AnySensor
+        // eg `iPhone18,2` or `Watch7,12
+        let deviceProductType: String
+        
+        public static func == (lhs: Self, rhs: Self) -> Bool {
+            lhs.sensor.id == rhs.sensor.id && lhs.deviceProductType == rhs.deviceProductType
+        }
+        
+        public func hash(into hasher: inout Hasher) {
+            sensor.hash(into: &hasher)
+            hasher.combine(deviceProductType)
+        }
+    }
+    
+    static let queryAnchorKeyPrefix = "edu.stanford.SpeziSensorKit.QueryAnchors"
+    
     @ObservationIgnored @Dependency(LocalStorage.self) private var localStorage
     
-    private let queryAnchorKeys = LocalStorageKeysStore<QueryAnchor> { sensor in
-        LocalStorageKey("edu.stanford.SpeziSensorKit.QueryAnchors.\(sensor.id)")
+    private let queryAnchorKeys = LocalStorageKeysStore<QueryAnchorKey, QueryAnchor> { key in
+        LocalStorageKey("\(SensorKit.queryAnchorKeyPrefix).\(key.sensor.id).\(key.deviceProductType)")
     }
     
     /// Creates a new instance of the `SensorKit` module.
@@ -88,31 +106,44 @@ extension SensorKit {
     /// The SensorKit module internally keep track of the last time an anchored fetch was performed for a specific ``Sensor``;
     /// a fetch using this function will return only those samples that have been added to SensorKit since the last fetch for the sensor.
     ///
+    /// - parameter sensor: The ``Sensor`` from which data should be fetched
+    /// - parameter batchSize: The batch size that should be used by the returned sequence. Omit this to use the `sensor`'s default batch size.
+    ///
     /// - Note: In order to fetch data from a sensor, you first need to request permission and call ``Sensor/startRecording()``
     @available(iOS 18, *)
     public func fetchAnchored<Sample>(
-        _ sensor: Sensor<Sample>
+        _ sensor: Sensor<Sample>,
+        batchSize: BatchSize? = nil
     ) async throws -> some AsyncSequence<(SensorKit.BatchInfo, [Sample.SafeRepresentation]), any Error> {
-        let anchor = ManagedQueryAnchor(
-            storageKey: queryAnchorKeys.key(for: sensor),
-            in: localStorage
-        )
-        return try await sensor.fetchBatched(anchor: anchor)
-    }
-    
-    /// Resets the query anchor for the specified sensor.
-    ///
-    /// This will cause subsequent calls to ``fetchAnchored(_:)`` to potentially re-fetch already-processed samples.
-    public func resetQueryAnchor(for sensor: any AnySensor) throws {
-        try localStorage.delete(queryAnchorKeys.key(for: sensor))
+        try await AnchoredAsyncDataFetcher(sensor: sensor) { queryAnchorKey in
+            let storageKey = self.queryAnchorKeys.storageKey(for: queryAnchorKey)
+            return ManagedQueryAnchor(storageKey: storageKey, in: self.localStorage)
+        }
     }
     
     /// Returns the internal value of the sensor's query anchor.
     ///
     /// - Important: This function is intended exclusively for debugging purposes; query anchors' internal representations are an implementation detail.
     @_spi(Internal)
-    public func queryAnchorValue(for sensor: any AnySensor) -> Date? {
-        (try? localStorage.load(queryAnchorKeys.key(for: sensor)))?.timestamp
+    public func queryAnchorValue(for sensor: any AnySensor, deviceProductType: String) -> Date? {
+        let storageKey = queryAnchorKeys.storageKey(for: QueryAnchorKey(sensor: sensor, deviceProductType: deviceProductType))
+        return (try? localStorage.load(storageKey))?.timestamp
+    }
+    
+    /// Resets the query anchors for the specified sensor.
+    ///
+    /// This will cause subsequent calls to ``fetchAnchored(_:)`` to potentially re-fetch already-processed samples.
+    public func resetQueryAnchors(for sensor: any AnySensor) throws {
+        try localStorage.deleteAll { rawKey in
+            rawKey.starts(with: "\(SensorKit.queryAnchorKeyPrefix).\(sensor.id)")
+        }
+    }
+    
+    /// Resets the query anchors for all sensors.
+    public func resetAllQueryAnchors() throws {
+        try localStorage.deleteAll { rawKey in
+            rawKey.starts(with: SensorKit.queryAnchorKeyPrefix)
+        }
     }
 }
 

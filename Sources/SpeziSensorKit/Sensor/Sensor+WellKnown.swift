@@ -13,31 +13,29 @@ public import SpeziFoundation
 
 extension SensorKit {
     /// All ``Sensor``s currently known to the `SensorKit` module.
-    public static var allKnownSensors: [any AnySensor] {
-        Array {
-            Sensor.onWrist
-            Sensor.ambientLight
-            Sensor.ambientPressure
-            Sensor.heartRate
-            Sensor.pedometer
-            Sensor.wristTemperature
-            if #available(iOS 17.4, *) {
-                Sensor.ppg
-                Sensor.ecg
-            }
-            Sensor.visits
-            Sensor.deviceUsage
-            Sensor.accelerometer
-            Sensor.rotationRate
-            Sensor.messagesUsage
-            Sensor.phoneUsage
-            Sensor.keyboardMetrics
-            Sensor.siriSpeechMetrics
-            Sensor.telephonySpeechMetrics
-            Sensor.mediaEvents
-            Sensor.faceMetrics
-            Sensor.odometer
+    public static let allKnownSensors: [any AnySensor] = Array {
+        Sensor.onWrist
+        Sensor.ambientLight
+        Sensor.ambientPressure
+        Sensor.heartRate
+        Sensor.pedometer
+        Sensor.wristTemperature
+        if #available(iOS 17.4, *) {
+            Sensor.ppg
+            Sensor.ecg
         }
+        Sensor.visits
+        Sensor.deviceUsage
+        Sensor.accelerometer
+        Sensor.rotationRate
+        Sensor.messagesUsage
+        Sensor.phoneUsage
+        Sensor.keyboardMetrics
+        Sensor.siriSpeechMetrics
+        Sensor.telephonySpeechMetrics
+        Sensor.mediaEvents
+        Sensor.faceMetrics
+        Sensor.odometer
     }
 }
 
@@ -124,7 +122,8 @@ extension Sensor where Sample == SRPhotoplethysmogramSample {
             srSensor: .photoplethysmogram,
             displayName: "PPG",
             dataQuarantineDuration: .hours(24),
-            sensorKitFetchReturnType: .array
+            sensorKitFetchReturnType: .array,
+            suggestedBatchSize: .numSamples(250_000)
         )
     }
 }
@@ -137,7 +136,8 @@ extension Sensor where Sample == SRElectrocardiogramSample {
             srSensor: .electrocardiogram,
             displayName: "ECG",
             dataQuarantineDuration: .hours(24),
-            sensorKitFetchReturnType: .array
+            sensorKitFetchReturnType: .array,
+            suggestedBatchSize: .timeInterval(.days(1))
         )
     }
 }

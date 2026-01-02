@@ -9,7 +9,20 @@
 // swiftlint:disable file_types_order
 
 public import SensorKit
-import SpeziFoundation
+public import SpeziFoundation
+
+
+/// Controls how samples should be batched when performing an anchored fetch.
+public enum BatchSize: Hashable, Sendable {
+    /// Each batch should contain `numSamples` samples.
+    case numSamples(_ numSamples: Int)
+    /// Each batch should contain the samples from a time period of length `duration`.
+    case timeInterval(_ duration: Duration)
+    
+    @inlinable internal static var `default`: Self {
+        .numSamples(100_000)
+    }
+}
 
 
 extension AnySensor {
@@ -79,16 +92,11 @@ extension AnySensor {
     /// - parameter fetchDuration: The time duration specifying how much data should be fetched, going back from the sensor's current quarantine begin.
     ///     E.g.: if fetch data from a sensor with a 24 hour quarantine period, and specify `.hours(12)` for the fetch duration, this function will fetch data in the time range `now-36h` to `now-24h`.
     /// - returns: The sensor's samples, processed into their ``SensorKitSampleSafeRepresentation``s.
+    @inlinable
     public func fetch(from device: SRDevice, mostRecentAvailable fetchDuration: Duration) async throws -> [Sample.SafeRepresentation] {
         let endDate = self.currentQuarantineBegin
         let startDate = endDate.addingTimeInterval(-fetchDuration.timeInterval)
         return try await fetch(from: device, timeRange: startDate..<endDate)
-    }
-    
-    /// Performs a batched fetch, using a managed query anchor.
-    @available(iOS 18, *)
-    func fetchBatched(anchor: ManagedQueryAnchor) async throws -> some AsyncSequence<AnchoredAsyncDataFetcher<Self.Sample>.Element, any Error> {
-        try await AnchoredAsyncDataFetcher(sensor: self, anchor: anchor)
     }
 }
 
