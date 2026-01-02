@@ -186,16 +186,18 @@ private final class SamplesFetcherDelegate<Sample: SensorKitSampleProtocol>: NSO
             return
         }
         nonisolated(unsafe) let results = results
-        let samples = SensorKit.FetchResultsIterator(results).lazy.map {
-            (timestamp: $0, sample: unsafeDowncast($1, to: Sample.SafeRepresentationProcessingInput.self))
+        autoreleasepool {
+            let samples = SensorKit.FetchResultsIterator(results).lazy.map {
+                (timestamp: $0, sample: unsafeDowncast($1, to: Sample.SafeRepresentationProcessingInput.self))
+            }
+            do {
+                let processedResults: [Sample.SafeRepresentation] = try Sample.processIntoSafeRepresentation(samples)
+                continuation.resume(returning: processedResults)
+            } catch {
+                continuation.resume(throwing: error)
+            }
+            self.results = []
+            self.continuation = nil
         }
-        do {
-            let processedResults: [Sample.SafeRepresentation] = try Sample.processIntoSafeRepresentation(samples)
-            continuation.resume(returning: processedResults)
-        } catch {
-            continuation.resume(throwing: error)
-        }
-        self.results = []
-        self.continuation = nil
     }
 }
