@@ -18,7 +18,7 @@ import Foundation
 @available(iOS 18.0, *)
 @resultBuilder
 public enum AsyncIteratorBuilder<Element, Failure: Error> {
-    /// Constructs an `AsyncSequenceIterator`
+    /// Constructs an `AsyncIteratorProtocol`
     @inlinable
     public static func build<I: AsyncIteratorProtocol<Element, Failure>>(
         @AsyncIteratorBuilder<Element, Failure> _ build: () -> I
