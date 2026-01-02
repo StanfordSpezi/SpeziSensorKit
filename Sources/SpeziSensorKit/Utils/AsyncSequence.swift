@@ -18,57 +18,57 @@ import Foundation
 @available(iOS 18.0, *)
 @resultBuilder
 public enum AsyncIteratorBuilder<Element, Failure: Error> {
-    /// Constructs an `AsyncIteratorProtocol`
-    @inlinable
-    public static func build<I: AsyncIteratorProtocol<Element, Failure>>(
-        @AsyncIteratorBuilder<Element, Failure> _ build: () -> I
-    ) -> I {
-        build()
-    }
-    
     // swiftlint:disable missing_docs
     @inlinable
-    public static func buildExpression<I: AsyncIteratorProtocol<Element, Failure>>(_ iterator: I) -> I {
+    public static func buildExpression<
+        I: AsyncIteratorProtocol<Element, Failure>
+    >(_ iterator: I) -> I {
         iterator
     }
     
     @_disfavoredOverload
     @inlinable
-    public static func buildExpression<S: AsyncSequence<Element, Failure>>(_ sequence: S) -> S.AsyncIterator {
+    public static func buildExpression<
+        S: AsyncSequence<Element, Failure>
+    >(_ sequence: S) -> S.AsyncIterator {
         sequence.makeAsyncIterator()
     }
     
     @inlinable
-    public static func buildEither<True: AsyncIteratorProtocol<Element, Failure>, False: AsyncIteratorProtocol<Element, Failure>>(
-        first iterator: True
-    ) -> _ConditionalAsyncIterator<True, False> {
+    public static func buildEither<
+        True: AsyncIteratorProtocol<Element, Failure>,
+        False: AsyncIteratorProtocol<Element, Failure>
+    >(first iterator: True) -> _ConditionalAsyncIterator<True, False> {
         _ConditionalAsyncIterator<True, False>(iterator)
     }
     
     @inlinable
-    public static func buildEither<True: AsyncIteratorProtocol<Element, Failure>, False: AsyncIteratorProtocol<Element, Failure>>(
-        second iterator: False
-    ) -> _ConditionalAsyncIterator<True, False> {
+    public static func buildEither<
+        True: AsyncIteratorProtocol<Element, Failure>,
+        False: AsyncIteratorProtocol<Element, Failure>
+    >(second iterator: False) -> _ConditionalAsyncIterator<True, False> {
         _ConditionalAsyncIterator<True, False>(iterator)
     }
     
     @inlinable
-    public static func buildPartialBlock<I: AsyncIteratorProtocol<Element, Failure>>(first: I) -> I {
+    public static func buildPartialBlock<
+        I: AsyncIteratorProtocol<Element, Failure>
+    >(first: I) -> I {
         first
     }
     
     @inlinable
-    public static func buildPartialBlock<A: AsyncIteratorProtocol<Element, Failure>, N: AsyncIteratorProtocol<Element, Failure>>(
-        accumulated: A,
-        next: N
-    ) -> _Chain2AsyncIterator<A, N> {
+    public static func buildPartialBlock<
+        A: AsyncIteratorProtocol<Element, Failure>,
+        N: AsyncIteratorProtocol<Element, Failure>
+    >(accumulated: A, next: N) -> _Chain2AsyncIterator<A, N> {
         _Chain2AsyncIterator<A, N>(accumulated, next)
     }
     
     @inlinable
-    public static func buildArray<I: AsyncIteratorProtocol<Element, Failure> & SendableMetatype>(
-        _ components: [I]
-    ) -> some AsyncIteratorProtocol<Element, Failure> {
+    public static func buildArray<
+        I: AsyncIteratorProtocol<Element, Failure> & SendableMetatype
+    >(_ components: [I]) -> some AsyncIteratorProtocol<Element, Failure> {
         components
             .map { AsyncIteratorSequence($0) }
             .makeAsync(failureType: Failure.self)
@@ -77,7 +77,9 @@ public enum AsyncIteratorBuilder<Element, Failure: Error> {
     }
     
     @inlinable
-    public static func buildFinalResult<I: AsyncIteratorProtocol<Element, Failure>>(_ iterator: I) -> I {
+    public static func buildFinalResult<
+        I: AsyncIteratorProtocol<Element, Failure>
+    >(_ iterator: I) -> I {
         iterator
     }
     // swiftlint:enable missing_docs
