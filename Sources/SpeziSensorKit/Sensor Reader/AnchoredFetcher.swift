@@ -44,7 +44,7 @@ public struct AnchoredFetcher<Sample: SensorKitSampleProtocol>: AsyncSequence {
             timeIntervalBasedIterator(batchDuration: .minutes(Int.max))
         } else {
             switch batchSize {
-            case .numSamples(let limit):
+            case .numberOfSamples(let limit):
                 for device in devices {
                     nonisolated(unsafe) let device = device
                     SampleCountBasedFetcher(
