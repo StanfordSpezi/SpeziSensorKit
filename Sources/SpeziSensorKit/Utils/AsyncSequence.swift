@@ -31,18 +31,16 @@ public enum _AsyncIteratorBuilder<Element, Failure: Error> {
     }
     
     @inlinable
-    public static func buildEither<
-        True: AsyncIteratorProtocol<Element, Failure>,
-        False: AsyncIteratorProtocol<Element, Failure>
-    >(first iterator: True) -> _ConditionalAsyncIterator<True, False> {
+    public static func buildEither<True: AsyncIteratorProtocol<Element, Failure>, False: AsyncIteratorProtocol<Element, Failure>>(
+        first iterator: True
+    ) -> _ConditionalAsyncIterator<True, False> {
         _ConditionalAsyncIterator<True, False>(iterator)
     }
     
     @inlinable
-    public static func buildEither<
-        True: AsyncIteratorProtocol<Element, Failure>,
-        False: AsyncIteratorProtocol<Element, Failure>
-    >(second iterator: False) -> _ConditionalAsyncIterator<True, False> {
+    public static func buildEither<True: AsyncIteratorProtocol<Element, Failure>, False: AsyncIteratorProtocol<Element, Failure>>(
+        second iterator: False
+    ) -> _ConditionalAsyncIterator<True, False> {
         _ConditionalAsyncIterator<True, False>(iterator)
     }
     
@@ -57,17 +55,17 @@ public enum _AsyncIteratorBuilder<Element, Failure: Error> {
     }
     
     @inlinable
-    public static func buildPartialBlock<
-        A: AsyncIteratorProtocol<Element, Failure>,
-        N: AsyncIteratorProtocol<Element, Failure>
-    >(accumulated: A, next: N) -> _Chain2AsyncIterator<A, N> {
+    public static func buildPartialBlock<A: AsyncIteratorProtocol<Element, Failure>, N: AsyncIteratorProtocol<Element, Failure>>(
+        accumulated: A,
+        next: N
+    ) -> _Chain2AsyncIterator<A, N> {
         _Chain2AsyncIterator<A, N>(accumulated, next)
     }
     
     @inlinable
-    public static func buildArray<
-        I: AsyncIteratorProtocol<Element, Failure> & SendableMetatype
-    >(_ components: [I]) -> some AsyncIteratorProtocol<Element, Failure> {
+    public static func buildArray<I: AsyncIteratorProtocol<Element, Failure> & SendableMetatype>(
+        _ components: [I]
+    ) -> some AsyncIteratorProtocol<Element, Failure> {
         components
             .map { _AsyncIteratorSequence($0) }
             ._makeAsync(failureType: Failure.self)
@@ -96,7 +94,7 @@ where A.Element == B.Element, A.Failure == B.Failure {
         case snd(B)
     }
     
-    @usableFromInline var _storage: Storage // swiftlint:disable:this identifier_name
+    @usableFromInline var _storage: Storage
     
     @inlinable
     init(_ base: A) {

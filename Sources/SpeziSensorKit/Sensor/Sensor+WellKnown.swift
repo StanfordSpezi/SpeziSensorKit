@@ -122,8 +122,7 @@ extension Sensor where Sample == SRPhotoplethysmogramSample {
             srSensor: .photoplethysmogram,
             displayName: "PPG",
             dataQuarantineDuration: .hours(24),
-            sensorKitFetchReturnType: .array,
-            suggestedBatchSize: .numSamples(250_000)
+            sensorKitFetchReturnType: .array
         )
     }
 }
@@ -136,8 +135,7 @@ extension Sensor where Sample == SRElectrocardiogramSample {
             srSensor: .electrocardiogram,
             displayName: "ECG",
             dataQuarantineDuration: .hours(24),
-            sensorKitFetchReturnType: .array,
-            suggestedBatchSize: .timeInterval(.days(1))
+            sensorKitFetchReturnType: .array
         )
     }
 }

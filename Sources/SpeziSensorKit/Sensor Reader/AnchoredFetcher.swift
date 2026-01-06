@@ -40,28 +40,37 @@ public struct AnchoredFetcher<Sample: SensorKitSampleProtocol>: AsyncSequence {
     
     @_AsyncIteratorBuilder<Element, Failure>
     public consuming func makeAsyncIterator() -> some AsyncIteratorProtocol<Element, Failure> {
-        switch batchSize {
-        case .numSamples(let limit):
-            for device in devices {
-                nonisolated(unsafe) let device = device
-                SampleCountBasedFetcher(
-                    sensor: sensor,
-                    batchSize: limit,
-                    anchor: queryAnchorProvider(SensorKit.QueryAnchorKey(sensor: sensor, deviceProductType: device.productType)),
-                    device: device
-                )
+        if sensor == Sensor.ecg {
+            timeIntervalBasedIterator(batchDuration: Int.max)
+        } else {
+            switch batchSize {
+            case .numSamples(let limit):
+                for device in devices {
+                    nonisolated(unsafe) let device = device
+                    SampleCountBasedFetcher(
+                        sensor: sensor,
+                        batchSize: limit,
+                        anchor: queryAnchorProvider(SensorKit.QueryAnchorKey(sensor: sensor, deviceProductType: device.productType)),
+                        device: device
+                    )
+                }
+            case .timeInterval(let duration):
+                timeIntervalBasedIterator(batchDuration: duration)
             }
-        case .timeInterval(let duration):
-            for device in devices {
-                nonisolated(unsafe) let device = device
-                TimeIntervalBasedFetcher(
-                    sensor: sensor,
-                    anchor: queryAnchorProvider(SensorKit.QueryAnchorKey(sensor: sensor, deviceProductType: device.productType)),
-                    quarantineCutoff: sensor.currentQuarantineBegin,
-                    batchSize: duration.timeInterval,
-                    device: device
-                )
-            }
+        }
+    }
+    
+    @_AsyncIteratorBuilder<Element, Failure>
+    private func timeIntervalBasedIterator(batchDuration duration: Duration) -> some AsyncIteratorProtocol<Element, Failure> {
+        for device in devices {
+            nonisolated(unsafe) let device = device
+            TimeIntervalBasedFetcher(
+                sensor: sensor,
+                anchor: queryAnchorProvider(SensorKit.QueryAnchorKey(sensor: sensor, deviceProductType: device.productType)),
+                quarantineCutoff: sensor.currentQuarantineBegin,
+                batchSize: duration.timeInterval,
+                device: device
+            )
         }
     }
 }

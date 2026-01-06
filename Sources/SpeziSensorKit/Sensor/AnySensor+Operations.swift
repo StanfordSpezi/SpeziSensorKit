@@ -15,12 +15,15 @@ public import SpeziFoundation
 /// Controls how samples should be batched when performing an anchored fetch.
 public enum BatchSize: Hashable, Sendable {
     /// Each batch should contain `numSamples` samples.
-    case numSamples(_ numSamples: Int)
+    ///
+    /// - Note: When using the ``AnchoredFetcher`` to fetch batches of samples, individual batches might be slightly larger than the limit defined here.
+    case numberOfSamples(_ numSamples: Int)
+    
     /// Each batch should contain the samples from a time period of length `duration`.
     case timeInterval(_ duration: Duration)
     
     @inlinable internal static var `default`: Self {
-        .numSamples(100_000)
+        .numberOfSamples(100_000)
     }
 }
 
