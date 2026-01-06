@@ -38,7 +38,7 @@ public struct AnchoredFetcher<Sample: SensorKitSampleProtocol>: AsyncSequence {
         self.devices = try await sensor.fetchDevices()
     }
     
-    @AsyncIteratorBuilder<Element, Failure>
+    @_AsyncIteratorBuilder<Element, Failure>
     public consuming func makeAsyncIterator() -> some AsyncIteratorProtocol<Element, Failure> {
         switch batchSize {
         case .numSamples(let limit):

@@ -6,7 +6,7 @@
 // SPDX-License-Identifier: MIT
 //
 
-// swiftlint:disable file_types_order
+// swiftlint:disable file_types_order type_name identifier_name
 
 import Foundation
 
@@ -17,20 +17,16 @@ import Foundation
 /// without needing to resort to existentials.
 @available(iOS 18.0, *)
 @resultBuilder
-public enum AsyncIteratorBuilder<Element, Failure: Error> {
+public enum _AsyncIteratorBuilder<Element, Failure: Error> {
     // swiftlint:disable missing_docs
     @inlinable
-    public static func buildExpression<
-        I: AsyncIteratorProtocol<Element, Failure>
-    >(_ iterator: I) -> I {
+    public static func buildExpression<I: AsyncIteratorProtocol<Element, Failure>>(_ iterator: I) -> I {
         iterator
     }
     
     @_disfavoredOverload
     @inlinable
-    public static func buildExpression<
-        S: AsyncSequence<Element, Failure>
-    >(_ sequence: S) -> S.AsyncIterator {
+    public static func buildExpression<S: AsyncSequence<Element, Failure>>(_ sequence: S) -> S.AsyncIterator {
         sequence.makeAsyncIterator()
     }
     
@@ -51,9 +47,12 @@ public enum AsyncIteratorBuilder<Element, Failure: Error> {
     }
     
     @inlinable
-    public static func buildPartialBlock<
-        I: AsyncIteratorProtocol<Element, Failure>
-    >(first: I) -> I {
+    public static func buildBlock() -> some AsyncIteratorProtocol<Element, Failure> {
+        _EmptyAsyncSequence()
+    }
+    
+    @inlinable
+    public static func buildPartialBlock<I: AsyncIteratorProtocol<Element, Failure>>(first: I) -> I {
         first
     }
     
@@ -70,16 +69,14 @@ public enum AsyncIteratorBuilder<Element, Failure: Error> {
         I: AsyncIteratorProtocol<Element, Failure> & SendableMetatype
     >(_ components: [I]) -> some AsyncIteratorProtocol<Element, Failure> {
         components
-            .map { AsyncIteratorSequence($0) }
-            .makeAsync(failureType: Failure.self)
+            .map { _AsyncIteratorSequence($0) }
+            ._makeAsync(failureType: Failure.self)
             .flatMap { $0 }
             .makeAsyncIterator()
     }
     
     @inlinable
-    public static func buildFinalResult<
-        I: AsyncIteratorProtocol<Element, Failure>
-    >(_ iterator: I) -> I {
+    public static func buildFinalResult<I: AsyncIteratorProtocol<Element, Failure>>(_ iterator: I) -> I {
         iterator
     }
     // swiftlint:enable missing_docs
@@ -88,7 +85,7 @@ public enum AsyncIteratorBuilder<Element, Failure: Error> {
 
 /// An async iterator that iterates over one of two iterators.
 @available(iOS 18.0, *)
-public struct _ConditionalAsyncIterator<A: AsyncIteratorProtocol, B: AsyncIteratorProtocol>: AsyncIteratorProtocol // swiftlint:disable:this type_name
+public struct _ConditionalAsyncIterator<A: AsyncIteratorProtocol, B: AsyncIteratorProtocol>: AsyncIteratorProtocol
 where A.Element == B.Element, A.Failure == B.Failure {
     public typealias Element = A.Element
     public typealias Failure = A.Failure
@@ -131,7 +128,7 @@ where A.Element == B.Element, A.Failure == B.Failure {
 
 /// An `AsyncSequence` that contains no elements.
 @available(iOS 18, *)
-public struct EmptyAsyncSequence<Element, Failure: Error>: AsyncSequence, AsyncIteratorProtocol {
+public struct _EmptyAsyncSequence<Element, Failure: Error>: AsyncSequence, AsyncIteratorProtocol {
     public typealias Element = Element
     public typealias Failure = Failure
     
@@ -152,13 +149,13 @@ public struct EmptyAsyncSequence<Element, Failure: Error>: AsyncSequence, AsyncI
 
 /// A concatenation of two async iterators.
 @available(iOS 18, *)
-public struct _Chain2AsyncIterator<A: AsyncIteratorProtocol, B: AsyncIteratorProtocol>: AsyncIteratorProtocol // swiftlint:disable:this type_name
+public struct _Chain2AsyncIterator<A: AsyncIteratorProtocol, B: AsyncIteratorProtocol>: AsyncIteratorProtocol
 where A.Element == B.Element, A.Failure == B.Failure {
     public typealias Element = A.Element
     public typealias Failure = A.Failure
     
-    @usableFromInline var _fstIt: A // swiftlint:disable:this identifier_name
-    @usableFromInline var _sndIt: B // swiftlint:disable:this identifier_name
+    @usableFromInline var _fstIt: A
+    @usableFromInline var _sndIt: B
     
     @inlinable
     init(_ fstIt: A, _ sndIt: B) {
@@ -181,11 +178,11 @@ where A.Element == B.Element, A.Failure == B.Failure {
 ///
 /// Async counterpart to Swift's `IteratorSequence`.
 @available(iOS 18, *)
-public struct AsyncIteratorSequence<Base: AsyncIteratorProtocol>: AsyncSequence, AsyncIteratorProtocol {
+public struct _AsyncIteratorSequence<Base: AsyncIteratorProtocol>: AsyncSequence, AsyncIteratorProtocol {
     public typealias Element = Base.Element
     public typealias Failure = Base.Failure
     
-    @usableFromInline var _base: Base // swiftlint:disable:this identifier_name
+    @usableFromInline var _base: Base
     
     @inlinable
     public init(_ base: Base) {
@@ -208,7 +205,7 @@ extension Sequence {
     /// Creates an `AsyncSequence` that produces this sequence's elements.
     @available(iOS 18.0, *)
     @inlinable
-    consuming func makeAsync<Failure: Error>(failureType: Failure.Type = Never.self) -> some AsyncSequence<Element, Failure> {
+    consuming func _makeAsync<Failure: Error>(failureType: Failure.Type = Never.self) -> some AsyncSequence<Element, Failure> {
         _AsyncSequenceAdapter<Self, Failure>(base: self)
     }
 }
@@ -216,11 +213,11 @@ extension Sequence {
 
 /// Turns a `Sequence` into an `AsyncSequence`.
 @available(iOS 18.0, *)
-public struct _AsyncSequenceAdapter<Base: Sequence, Failure: Error>: AsyncSequence { // swiftlint:disable:this type_name
+public struct _AsyncSequenceAdapter<Base: Sequence, Failure: Error>: AsyncSequence {
     public typealias Element = Base.Element
     public typealias Failure = Failure
     
-    @usableFromInline let _base: Base  // swiftlint:disable:this identifier_name
+    @usableFromInline let _base: Base
     
     @inlinable
     init(base: Base) {
@@ -237,7 +234,7 @@ public struct _AsyncSequenceAdapter<Base: Sequence, Failure: Error>: AsyncSequen
 @available(iOS 18.0, *)
 extension _AsyncSequenceAdapter {
     public struct AsyncIterator: AsyncIteratorProtocol {
-        @usableFromInline var _base: Base.Iterator // swiftlint:disable:this identifier_name
+        @usableFromInline var _base: Base.Iterator
         
         @inlinable
         init(base: Base.Iterator) {
