@@ -41,7 +41,7 @@ public struct AnchoredFetcher<Sample: SensorKitSampleProtocol>: AsyncSequence {
     @_AsyncIteratorBuilder<Element, Failure>
     public consuming func makeAsyncIterator() -> some AsyncIteratorProtocol<Element, Failure> {
         if sensor.id == Sensor.ecg.id {
-            timeIntervalBasedIterator(batchDuration: Duration(attoseconds: .max))
+            timeIntervalBasedIterator(batchDuration: Duration(secondsComponent: .max, attosecondsComponent: 0))
         } else {
             switch batchSize {
             case .numberOfSamples(let limit):
