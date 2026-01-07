@@ -33,7 +33,7 @@ public final class SensorKit: Module, EnvironmentAccessible, @unchecked Sendable
     /// Identifies a query anchor.
     public struct QueryAnchorKey: Hashable {
         let sensor: any AnySensor
-        // eg `iPhone18,2` or `Watch7,12
+        // eg `iPhone18,2` or `Watch7,12`
         let deviceProductType: String
         
         public static func == (lhs: Self, rhs: Self) -> Bool {
@@ -123,7 +123,22 @@ extension SensorKit {
     
     /// Returns the internal value of the sensor's query anchor.
     ///
-    /// - Important: This function is intended exclusively for debugging purposes; query anchors' internal representations are an implementation detail.
+    /// - returns: A dictionary whose keys are device product type strings (e.g., `iPhone18,2` or `Watch7,12`), and whose values are the query anchor values for these devices.
+    ///
+    /// - Note: This function only returns values for devices for which there currently exists data in SensorKit.
+    ///
+    /// - Important: This function is intended exclusively for debugging purposes; query anchors' internal representations are an implementation detail and may change without notice.
+    @_spi(Internal)
+    public func queryAnchorValues(for sensor: any AnySensor) async throws -> [String: Date] {
+        let devices = try await sensor.fetchDevices()
+        return devices.reduce(into: [:]) { dict, device in
+            dict[device.productType] = queryAnchorValue(for: sensor, deviceProductType: device.productType)
+        }
+    }
+    
+    /// Returns the internal value of the sensor's query anchor.
+    ///
+    /// - Important: This function is intended exclusively for debugging purposes; query anchors' internal representations are an implementation detail and may change without notice.
     @_spi(Internal)
     public func queryAnchorValue(for sensor: any AnySensor, deviceProductType: String) -> Date? {
         let storageKey = queryAnchorKeys.storageKey(for: QueryAnchorKey(sensor: sensor, deviceProductType: deviceProductType))
