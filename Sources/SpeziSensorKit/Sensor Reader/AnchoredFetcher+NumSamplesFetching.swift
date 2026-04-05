@@ -132,7 +132,6 @@ private final class FetchDelegate<Sample: SensorKitSampleProtocol>: NSObject, SR
         defer {
             lock.unlock()
         }
-        
         guard let nextBatchContinuation else {
             return
         }
